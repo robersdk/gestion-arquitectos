@@ -2,57 +2,624 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ArquiGest Studio</title>
   <style>
-    body{font-family:system-ui,sans-serif;margin:0;background:#f7f6f2;color:#28251d}
-    .wrap{max-width:1100px;margin:0 auto;padding:24px}
-    .card{background:#fff;border:1px solid #d8d3ca;border-radius:18px;padding:20px;box-shadow:0 8px 24px rgba(40,37,29,.08);margin-bottom:18px}
-    header{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
-    h1,h2,h3{margin:0}
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-    .btn{display:inline-block;padding:12px 16px;border-radius:999px;background:#0f5c63;color:#fff;text-decoration:none}
-    .muted{color:#6f6b63}
-    table{width:100%;border-collapse:collapse}
-    td,th{padding:12px 0;border-bottom:1px solid #e4dfd6;text-align:left}
-    @media (max-width: 900px){
-      .grid{grid-template-columns:1fr 1fr}
+    :root{
+      --bg:#f7f6f2;
+      --surface:#ffffff;
+      --surface-2:#fbfbf9;
+      --text:#28251d;
+      --muted:#6f6b63;
+      --border:#d8d3ca;
+      --divider:#e4dfd6;
+      --primary:#0f5c63;
+      --primary-2:#d6e2e0;
+      --success:#437a22;
+      --warning:#964219;
+      --shadow:0 8px 24px rgba(40,37,29,.08);
+      --r-sm:12px;
+      --r-md:18px;
+      --r-lg:24px;
+      --font:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      --serif:Georgia,serif;
     }
-    @media (max-width: 600px){
-      .grid{grid-template-columns:1fr}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:var(--font);
+      background:var(--bg);
+      color:var(--text);
+      -webkit-text-size-adjust:100%;
+    }
+    a{text-decoration:none;color:inherit}
+    button,input{font:inherit}
+    .app{
+      display:grid;
+      grid-template-columns:290px 1fr;
+      min-height:100dvh;
+    }
+    .sidebar{
+      background:linear-gradient(180deg,#fff,#fbfbf9);
+      border-right:1px solid var(--border);
+      padding:24px;
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+      position:sticky;
+      top:0;
+      height:100dvh;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      background:var(--primary-2);
+      display:grid;
+      place-items:center;
+      color:var(--primary);
+      flex:0 0 auto;
+    }
+    .logo svg{width:26px;height:26px}
+    .brand strong{
+      display:block;
+      font-size:1.05rem;
+    }
+    .brand span{
+      display:block;
+      font-size:.92rem;
+      color:var(--muted);
+      margin-top:2px;
+    }
+    .nav{
+      display:grid;
+      gap:10px;
+    }
+    .nav a{
+      padding:14px 16px;
+      border-radius:14px;
+      color:var(--muted);
+      background:transparent;
+    }
+    .nav a.active,.nav a:hover{
+      background:var(--primary-2);
+      color:var(--text);
+    }
+    .side-card{
+      margin-top:auto;
+      background:#f0ede7;
+      border:1px solid var(--border);
+      padding:16px;
+      border-radius:18px;
+    }
+    .side-card p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:.95rem;
+      line-height:1.5;
+    }
+    .main{
+      min-width:0;
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:center;
+      padding:20px 24px;
+      border-bottom:1px solid var(--divider);
+      position:sticky;
+      top:0;
+      background:rgba(247,246,242,.9);
+      backdrop-filter:blur(14px);
+      z-index:3;
+    }
+    .topbar h1{
+      margin:0;
+      font-size:clamp(1.5rem,1rem + 1.5vw,2.2rem);
+      font-family:var(--serif);
+      line-height:1.05;
+    }
+    .topbar p{
+      margin:4px 0 0;
+      color:var(--muted);
+    }
+    .top-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .btn{
+      padding:12px 16px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      cursor:pointer;
+    }
+    .btn.primary{
+      background:var(--primary);
+      color:#fff;
+      border-color:var(--primary);
+    }
+    .content{
+      padding:24px;
+      display:grid;
+      gap:24px;
+    }
+    .hero,.section-grid{
+      display:grid;
+      grid-template-columns:1.35fr .9fr;
+      gap:24px;
+    }
+    .panel{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--r-lg);
+      box-shadow:var(--shadow);
+    }
+    .hero-card{
+      padding:32px;
+      background:linear-gradient(135deg,#fff,#f0ede7);
+    }
+    .eyebrow{
+      font-size:.85rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--primary);
+      font-weight:700;
+    }
+    .hero-card h2{
+      margin:12px 0 0;
+      font-size:clamp(2rem,1.2rem + 2.4vw,3.4rem);
+      line-height:1.05;
+      max-width:10ch;
+      font-family:var(--serif);
+    }
+    .hero-card p{
+      color:var(--muted);
+      max-width:60ch;
+      line-height:1.6;
+    }
+    .cta-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:16px;
+    }
+    .stat{
+      padding:20px;
+    }
+    .stat span{
+      display:block;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+    .stat strong{
+      display:block;
+      font-size:clamp(1.5rem,1rem + 1vw,2rem);
+      margin-top:8px;
+      font-family:var(--serif);
+    }
+    .stat small{
+      display:block;
+      margin-top:8px;
+      color:var(--success);
+    }
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:20px 20px 0;
+      gap:12px;
+    }
+    .section-head h3{
+      margin:0;
+      font-size:1.15rem;
+    }
+    .section-head span{
+      color:var(--muted);
+      font-size:.95rem;
+    }
+    .list{
+      padding:20px;
+      display:grid;
+      gap:14px;
+    }
+    .item{
+      padding:16px;
+      border:1px solid var(--border);
+      background:var(--surface-2);
+      border-radius:16px;
+      display:grid;
+      gap:10px;
+    }
+    .row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+    }
+    .meta{
+      font-size:.92rem;
+      color:var(--muted);
+    }
+    .badge{
+      padding:.35rem .7rem;
+      border-radius:999px;
+      font-size:.75rem;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .b-open{background:#e4efe9;color:#2b5f37}
+    .b-review{background:#f3e7d6;color:#7a4a1f}
+    .b-billed{background:var(--primary-2);color:var(--primary)}
+    .progress{
+      height:10px;
+      background:var(--divider);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .progress i{
+      display:block;
+      height:100%;
+      background:var(--primary);
+      border-radius:999px;
+    }
+    .mini{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:24px;
+    }
+    .table-wrap{
+      padding:0 20px 20px;
+      overflow-x:auto;
+    }
+    .table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:520px;
+    }
+    .table th,.table td{
+      padding:14px 0;
+      text-align:left;
+      border-bottom:1px solid var(--divider);
+      font-size:.95rem;
+    }
+    .table th{
+      color:var(--muted);
+      font-weight:600;
+    }
+    .calendar-day{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      padding:16px;
+      border-radius:16px;
+      background:var(--surface-2);
+      border:1px solid var(--border);
+    }
+    .date-box{
+      min-width:58px;
+      border-radius:16px;
+      padding:12px 10px;
+      background:var(--primary-2);
+      text-align:center;
+      color:var(--primary);
+      font-weight:700;
+      line-height:1;
+    }
+    .footer-note{
+      padding:0 20px 20px;
+      color:var(--muted);
+      font-size:.95rem;
+      line-height:1.6;
+    }
+    @media (max-width: 900px){
+      .app{grid-template-columns:1fr}
+      .sidebar{
+        position:relative;
+        height:auto;
+        border-right:none;
+        border-bottom:1px solid var(--border);
+        padding:16px;
+      }
+      .nav{
+        grid-auto-flow:column;
+        grid-auto-columns:max-content;
+        overflow-x:auto;
+        padding-bottom:4px;
+      }
+      .nav a{white-space:nowrap}
+      .topbar{
+        padding:16px;
+        align-items:flex-start;
+        flex-direction:column;
+      }
+      .content{padding:16px}
+      .hero,.section-grid,.stats,.mini{grid-template-columns:1fr}
+      .hero-card{padding:22px}
+      .section-head,.list,.table-wrap,.footer-note{padding-left:16px;padding-right:16px}
+      .cta-row,.top-actions{width:100%}
+      .cta-row .btn,.top-actions .btn{width:100%}
+      .table{min-width:100%}
+      .top-actions{justify-content:flex-start}
+    }
+    @media (max-width: 560px){
+      .hero-card h2{max-width:12ch}
+      .panel{border-radius:20px}
+      .item,.calendar-day,.stat{padding:14px}
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="card">
-      <div>
-        <h1>ArquiGest Studio</h1>
-        <p class="muted">Gestión simple para arquitectos y estudios pequeños.</p>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 18 12 4l9 14"></path>
+            <path d="M7 18h10"></path>
+            <path d="M9.6 13h4.8"></path>
+          </svg>
+        </div>
+        <div>
+          <strong>ArquiGest</strong>
+          <span>Estudio y proyectos</span>
+        </div>
       </div>
-      <a class="btn" href="#">Nuevo proyecto</a>
-    </header>
 
-    <section class="grid">
-      <div class="card"><h3>12</h3><p class="muted">Proyectos activos</p></div>
-      <div class="card"><h3>18.400 €</h3><p class="muted">Honorarios pendientes</p></div>
-      <div class="card"><h3>7</h3><p class="muted">Visitas programadas</p></div>
-      <div class="card"><h3>5</h3><p class="muted">Clientes en revisión</p></div>
-    </section>
+      <nav class="nav" aria-label="Principal">
+        <a class="active" href="#panel">Panel</a>
+        <a href="#proyectos">Proyectos</a>
+        <a href="#clientes">Clientes</a>
+        <a href="#presupuesto">Presupuesto</a>
+        <a href="#agenda">Agenda</a>
+      </nav>
 
-    <section class="card">
-      <h2>Proyectos</h2>
-      <table>
-        <thead>
-          <tr><th>Proyecto</th><th>Cliente</th><th>Estado</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Vivienda Pozuelo</td><td>Marta Llorente</td><td>En curso</td></tr>
-          <tr><td>Reforma Chamberí</td><td>Grupo Altea</td><td>Revisión</td></tr>
-          <tr><td>Local Lavapiés</td><td>Café Norte</td><td>Facturado</td></tr>
-        </tbody>
-      </table>
-    </section>
+      <div class="side-card">
+        <strong>Idea MVP</strong>
+        <p>Control de clientes, fases, honorarios, reuniones y cobros, pensado para estudio pequeño.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="panel">Estudio de arquitectura</h1>
+          <p>Una primera versión para ordenar proyectos, entregas y cobros.</p>
+        </div>
+        <div class="top-actions">
+          <button class="btn" data-theme-toggle>◐ Tema</button>
+          <button class="btn">Exportar</button>
+          <button class="btn primary">Nuevo proyecto</button>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="hero">
+          <article class="panel hero-card">
+            <span class="eyebrow">Arquitectos autónomos y estudios pequeños</span>
+            <h2>Menos hojas sueltas. Más control de proyecto.</h2>
+            <p>Este MVP reúne en una sola pantalla el seguimiento de obras, clientes, reuniones, honorarios y estado de cobro.</p>
+            <div class="cta-row">
+              <button class="btn primary">Crear expediente</button>
+              <button class="btn">Ver calendario</button>
+            </div>
+          </article>
+
+          <div class="stats">
+            <article class="panel stat">
+              <span>Proyectos activos</span>
+              <strong>12</strong>
+              <small>+2 este mes</small>
+            </article>
+            <article class="panel stat">
+              <span>Honorarios pendientes</span>
+              <strong>18.400 €</strong>
+              <small>4 facturas por emitir</small>
+            </article>
+            <article class="panel stat">
+              <span>Visitas programadas</span>
+              <strong>7</strong>
+              <small>3 esta semana</small>
+            </article>
+            <article class="panel stat">
+              <span>Clientes en revisión</span>
+              <strong>5</strong>
+              <small>Esperando respuesta</small>
+            </article>
+          </div>
+        </div>
+
+        <div class="section-grid">
+          <section class="panel" id="proyectos">
+            <div class="section-head">
+              <div>
+                <h3>Proyectos</h3>
+                <span>Fase, avance y siguiente hito</span>
+              </div>
+              <button class="btn">Ver todos</button>
+            </div>
+            <div class="list">
+              <article class="item">
+                <div class="row">
+                  <div>
+                    <strong>Vivienda unifamiliar · Pozuelo</strong>
+                    <div class="meta">Cliente: Marta Llorente · Proyecto básico</div>
+                  </div>
+                  <span class="badge b-open">En curso</span>
+                </div>
+                <div class="progress"><i style="width:68%"></i></div>
+                <div class="row meta"><span>Próximo hito: reunión municipal</span><span>68%</span></div>
+              </article>
+
+              <article class="item">
+                <div class="row">
+                  <div>
+                    <strong>Reforma integral · Chamberí</strong>
+                    <div class="meta">Cliente: Grupo Altea · Mediciones</div>
+                  </div>
+                  <span class="badge b-review">Revisión</span>
+                </div>
+                <div class="progress"><i style="width:42%"></i></div>
+                <div class="row meta"><span>Próximo hito: envío presupuesto</span><span>42%</span></div>
+              </article>
+
+              <article class="item">
+                <div class="row">
+                  <div>
+                    <strong>Licencia local comercial · Lavapiés</strong>
+                    <div class="meta">Cliente: Café Norte · Documentación final</div>
+                  </div>
+                  <span class="badge b-billed">Facturado</span>
+                </div>
+                <div class="progress"><i style="width:91%"></i></div>
+                <div class="row meta"><span>Próximo hito: entrega final</span><span>91%</span></div>
+              </article>
+            </div>
+          </section>
+
+          <div class="mini">
+            <section class="panel" id="clientes">
+              <div class="section-head">
+                <div>
+                  <h3>Clientes</h3>
+                  <span>Seguimiento rápido</span>
+                </div>
+              </div>
+              <div class="list">
+                <article class="item">
+                  <div><strong>Marta Llorente</strong></div>
+                  <div class="meta">Vivienda unifamiliar</div>
+                  <div class="row meta"><span>Último contacto: ayer</span><span>Presupuesto aceptado</span></div>
+                </article>
+                <article class="item">
+                  <div><strong>Grupo Altea</strong></div>
+                  <div class="meta">Reforma integral</div>
+                  <div class="row meta"><span>Último contacto: hace 3 días</span><span>Pendiente de cambios</span></div>
+                </article>
+              </div>
+            </section>
+
+            <section class="panel" id="agenda">
+              <div class="section-head">
+                <div>
+                  <h3>Agenda</h3>
+                  <span>Semana actual</span>
+                </div>
+              </div>
+              <div class="list">
+                <article class="calendar-day">
+                  <div class="date-box">14<br><small>JUL</small></div>
+                  <div>
+                    <strong>Visita de obra</strong>
+                    <div class="meta">Pozuelo · 10:30</div>
+                  </div>
+                </article>
+                <article class="calendar-day">
+                  <div class="date-box">16<br><small>JUL</small></div>
+                  <div>
+                    <strong>Reunión con cliente</strong>
+                    <div class="meta">Online · 18:00</div>
+                  </div>
+                </article>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="section-grid">
+          <section class="panel" id="presupuesto">
+            <div class="section-head">
+              <div>
+                <h3>Estado económico</h3>
+                <span>Honorarios, cobros y próximas emisiones</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Proyecto</th>
+                    <th>Honorarios</th>
+                    <th>Cobrado</th>
+                    <th>Pendiente</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Vivienda Pozuelo</td>
+                    <td>24.000 €</td>
+                    <td>14.000 €</td>
+                    <td>10.000 €</td>
+                  </tr>
+                  <tr>
+                    <td>Reforma Chamberí</td>
+                    <td>9.800 €</td>
+                    <td>3.500 €</td>
+                    <td>6.300 €</td>
+                  </tr>
+                  <tr>
+                    <td>Local Lavapiés</td>
+                    <td>6.200 €</td>
+                    <td>6.200 €</td>
+                    <td>0 €</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="footer-note">
+              Buen encaje como MVP porque el software para arquitectura suele centrarse en gestión de proyectos, facturación, planificación y documentación.
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <h3>Resumen</h3>
+                <span>Indicadores rápidos</span>
+              </div>
+            </div>
+            <div class="list">
+              <article class="item">
+                <span class="meta">Total presupuestado</span>
+                <strong>40.000 €</strong>
+              </article>
+              <article class="item">
+                <span class="meta">Cobrado</span>
+                <strong>23.700 €</strong>
+              </article>
+              <article class="item">
+                <span class="meta">Pendiente</span>
+                <strong>16.300 €</strong>
+              </article>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
   </div>
+
+  <script>
+    const btn = document.querySelector('[data-theme-toggle]');
+    let dark = false;
+    btn.addEventListener('click', () => {
+      dark = !dark;
+      document.body.style.filter = dark ? 'invert(1) hue-rotate(180deg)' : 'none';
+    });
+  </script>
 </body>
 </html>
