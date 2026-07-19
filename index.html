@@ -252,7 +252,7 @@
       projects:[
         {id:1,name:'Rehabilitación Chamberí',client:'Inversora Luma',phase:'Ejecución',status:'En plazo',budget:120000,spent:76000,notes:'Visita de obra completada.'},
         {id:2,name:'Local comercial Salamanca',client:'Benta Studio',phase:'Licencia',status:'Bloqueado',budget:45000,spent:9000,notes:'Falta respuesta municipal.'},
-        {id:3,name:'Vivienda unifamiliar Pozuelo',client:'Familia R.',phase:'Proyecto básico',status:'Urgente',budget:98000,spent:22000,notes:'Cerrar memoria y plano de instalaciones.'}
+        {id:3,name:'Vivienda unifamiliar Pozuelo',client:'Familia R.',phase:'Proyecto básico',status:'Urgente',budget:98000,spent:22000,notes:'Cerrar memoria y plano de installations.'}
       ],
       tasks:[
         {id:1,projectId:1,title:'Subir acta de visita',date:'2026-07-19',priority:'Alta',done:false},
@@ -363,7 +363,6 @@
       });
     }
     
-    /* Modificado: Añadido indicador visual sutil de documento adjunto en la lista compacta de notas */
     function renderNotes(){
       $('#notesList').innerHTML=(state.notes||[]).map(n=>{
         const hasDoc = n.docId ? `<span class="badge info" style="padding: 2px 6px; font-size: 10px;">📎 Archivo</span>` : '';
@@ -416,7 +415,6 @@
       $('#projectModal').style.display='flex';
     }
 
-    /* Modificado: El modal expandido lee e inyecta la referencia al documento vinculado si existiese */
     function openNoteViewModal(id){
       const n = (state.notes||[]).find(x=>x.id==id);
       if(!n) return;
@@ -472,7 +470,7 @@
       $('#projectModal').style.display='flex';
     }
 
-    /* Modificado: Formulario estructurado para Notas incluye selector dinámico para añadir un Documento de referencia */
+    /* Corregido: Removido el botón duplicado 'Cerrar' de la cabecera en el alta de Notas Rápidas */
     function openAddNoteModal(){
       $('#modalTitle').textContent = "Nueva Nota Rápida";
       $('#modalSub').textContent = "Anotación interna temporal";
