@@ -2,624 +2,546 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>ArquiGest Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0e6c73" />
+  <title>Obra Clara Pro</title>
+  <meta name="description" content="MVP funcional para estudios de arquitectura: obras, tareas, documentos, agenda y control económico." />
   <style>
-    :root{
-      --bg:#f7f6f2;
-      --surface:#ffffff;
-      --surface-2:#fbfbf9;
-      --text:#28251d;
-      --muted:#6f6b63;
-      --border:#d8d3ca;
-      --divider:#e4dfd6;
-      --primary:#0f5c63;
-      --primary-2:#d6e2e0;
-      --success:#437a22;
-      --warning:#964219;
-      --shadow:0 8px 24px rgba(40,37,29,.08);
-      --r-sm:12px;
-      --r-md:18px;
-      --r-lg:24px;
-      --font:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      --serif:Georgia,serif;
-    }
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{
-      margin:0;
-      font-family:var(--font);
-      background:var(--bg);
-      color:var(--text);
-      -webkit-text-size-adjust:100%;
-    }
-    a{text-decoration:none;color:inherit}
-    button,input{font:inherit}
-    .app{
-      display:grid;
-      grid-template-columns:290px 1fr;
-      min-height:100dvh;
-    }
-    .sidebar{
-      background:linear-gradient(180deg,#fff,#fbfbf9);
-      border-right:1px solid var(--border);
-      padding:24px;
-      display:flex;
-      flex-direction:column;
-      gap:20px;
-      position:sticky;
-      top:0;
-      height:100dvh;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-    .logo{
-      width:44px;
-      height:44px;
-      border-radius:14px;
-      background:var(--primary-2);
-      display:grid;
-      place-items:center;
-      color:var(--primary);
-      flex:0 0 auto;
-    }
-    .logo svg{width:26px;height:26px}
-    .brand strong{
-      display:block;
-      font-size:1.05rem;
-    }
-    .brand span{
-      display:block;
-      font-size:.92rem;
-      color:var(--muted);
-      margin-top:2px;
-    }
-    .nav{
-      display:grid;
-      gap:10px;
-    }
-    .nav a{
-      padding:14px 16px;
-      border-radius:14px;
-      color:var(--muted);
-      background:transparent;
-    }
-    .nav a.active,.nav a:hover{
-      background:var(--primary-2);
-      color:var(--text);
-    }
-    .side-card{
-      margin-top:auto;
-      background:#f0ede7;
-      border:1px solid var(--border);
-      padding:16px;
-      border-radius:18px;
-    }
-    .side-card p{
-      margin:8px 0 0;
-      color:var(--muted);
-      font-size:.95rem;
-      line-height:1.5;
-    }
-    .main{
-      min-width:0;
-    }
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      gap:16px;
-      align-items:center;
-      padding:20px 24px;
-      border-bottom:1px solid var(--divider);
-      position:sticky;
-      top:0;
-      background:rgba(247,246,242,.9);
-      backdrop-filter:blur(14px);
-      z-index:3;
-    }
-    .topbar h1{
-      margin:0;
-      font-size:clamp(1.5rem,1rem + 1.5vw,2.2rem);
-      font-family:var(--serif);
-      line-height:1.05;
-    }
-    .topbar p{
-      margin:4px 0 0;
-      color:var(--muted);
-    }
-    .top-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .btn{
-      padding:12px 16px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:#fff;
-      color:var(--text);
-      cursor:pointer;
-    }
-    .btn.primary{
-      background:var(--primary);
-      color:#fff;
-      border-color:var(--primary);
-    }
-    .content{
-      padding:24px;
-      display:grid;
-      gap:24px;
-    }
-    .hero,.section-grid{
-      display:grid;
-      grid-template-columns:1.35fr .9fr;
-      gap:24px;
-    }
-    .panel{
-      background:var(--surface);
-      border:1px solid var(--border);
-      border-radius:var(--r-lg);
-      box-shadow:var(--shadow);
-    }
-    .hero-card{
-      padding:32px;
-      background:linear-gradient(135deg,#fff,#f0ede7);
-    }
-    .eyebrow{
-      font-size:.85rem;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:var(--primary);
-      font-weight:700;
-    }
-    .hero-card h2{
-      margin:12px 0 0;
-      font-size:clamp(2rem,1.2rem + 2.4vw,3.4rem);
-      line-height:1.05;
-      max-width:10ch;
-      font-family:var(--serif);
-    }
-    .hero-card p{
-      color:var(--muted);
-      max-width:60ch;
-      line-height:1.6;
-    }
-    .cta-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:18px;
-    }
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:16px;
-    }
-    .stat{
-      padding:20px;
-    }
-    .stat span{
-      display:block;
-      color:var(--muted);
-      font-size:.95rem;
-    }
-    .stat strong{
-      display:block;
-      font-size:clamp(1.5rem,1rem + 1vw,2rem);
-      margin-top:8px;
-      font-family:var(--serif);
-    }
-    .stat small{
-      display:block;
-      margin-top:8px;
-      color:var(--success);
-    }
-    .section-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:20px 20px 0;
-      gap:12px;
-    }
-    .section-head h3{
-      margin:0;
-      font-size:1.15rem;
-    }
-    .section-head span{
-      color:var(--muted);
-      font-size:.95rem;
-    }
-    .list{
-      padding:20px;
-      display:grid;
-      gap:14px;
-    }
-    .item{
-      padding:16px;
-      border:1px solid var(--border);
-      background:var(--surface-2);
-      border-radius:16px;
-      display:grid;
-      gap:10px;
-    }
-    .row{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:center;
-    }
-    .meta{
-      font-size:.92rem;
-      color:var(--muted);
-    }
-    .badge{
-      padding:.35rem .7rem;
-      border-radius:999px;
-      font-size:.75rem;
-      font-weight:700;
-      white-space:nowrap;
-    }
-    .b-open{background:#e4efe9;color:#2b5f37}
-    .b-review{background:#f3e7d6;color:#7a4a1f}
-    .b-billed{background:var(--primary-2);color:var(--primary)}
-    .progress{
-      height:10px;
-      background:var(--divider);
-      border-radius:999px;
-      overflow:hidden;
-    }
-    .progress i{
-      display:block;
-      height:100%;
-      background:var(--primary);
-      border-radius:999px;
-    }
-    .mini{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:24px;
-    }
-    .table-wrap{
-      padding:0 20px 20px;
-      overflow-x:auto;
-    }
-    .table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:520px;
-    }
-    .table th,.table td{
-      padding:14px 0;
-      text-align:left;
-      border-bottom:1px solid var(--divider);
-      font-size:.95rem;
-    }
-    .table th{
-      color:var(--muted);
-      font-weight:600;
-    }
-    .calendar-day{
-      display:flex;
-      gap:14px;
-      align-items:flex-start;
-      padding:16px;
-      border-radius:16px;
-      background:var(--surface-2);
-      border:1px solid var(--border);
-    }
-    .date-box{
-      min-width:58px;
-      border-radius:16px;
-      padding:12px 10px;
-      background:var(--primary-2);
-      text-align:center;
-      color:var(--primary);
-      font-weight:700;
-      line-height:1;
-    }
-    .footer-note{
-      padding:0 20px 20px;
-      color:var(--muted);
-      font-size:.95rem;
-      line-height:1.6;
-    }
-    @media (max-width: 900px){
-      .app{grid-template-columns:1fr}
-      .sidebar{
-        position:relative;
-        height:auto;
-        border-right:none;
-        border-bottom:1px solid var(--border);
-        padding:16px;
-      }
-      .nav{
-        grid-auto-flow:column;
-        grid-auto-columns:max-content;
-        overflow-x:auto;
-        padding-bottom:4px;
-      }
-      .nav a{white-space:nowrap}
-      .topbar{
-        padding:16px;
-        align-items:flex-start;
-        flex-direction:column;
-      }
-      .content{padding:16px}
-      .hero,.section-grid,.stats,.mini{grid-template-columns:1fr}
-      .hero-card{padding:22px}
-      .section-head,.list,.table-wrap,.footer-note{padding-left:16px;padding-right:16px}
-      .cta-row,.top-actions{width:100%}
-      .cta-row .btn,.top-actions .btn{width:100%}
-      .table{min-width:100%}
-      .top-actions{justify-content:flex-start}
-    }
-    @media (max-width: 560px){
-      .hero-card h2{max-width:12ch}
-      .panel{border-radius:20px}
-      .item,.calendar-day,.stat{padding:14px}
-    }
+    :root{--bg:#f6f4ef;--surface:#ffffff;--surface2:#f0ece5;--text:#1f1d18;--muted:#67625a;--border:#ddd6ca;--primary:#0e6c73;--primary2:#155f66;--good:#2f7a34;--warn:#b16d1f;--bad:#b33c54;--info:#456bba;--shadow:0 10px 28px rgba(31,29,24,.08);--r:18px;--r2:12px;font-family:Inter,system-ui,sans-serif}
+    [data-theme=dark]{--bg:#141312;--surface:#1b1a18;--surface2:#23211f;--text:#ede8dc;--muted:#a59f94;--border:#34312d;--primary:#59aab0;--primary2:#3f8d93;--good:#76b85d;--warn:#d09b4d;--bad:#d56f8c;--info:#7aa0ef;--shadow:0 10px 28px rgba(0,0,0,.25)}
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,sans-serif} a{color:inherit;text-decoration:none} button,input,select,textarea{font:inherit}
+    .app{display:grid;grid-template-columns:280px 1fr;min-height:100vh} .side{padding:22px;border-right:1px solid var(--border);background:var(--surface);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:16px}
+    .brand{display:flex;gap:12px;align-items:center}.logo{width:44px;height:44px;border-radius:14px;background:var(--primary);display:grid;place-items:center;color:white;font-weight:800}
+    h1,h2,h3{margin:0;line-height:1.1} h1{font-size:20px} h2{font-size:28px} h3{font-size:18px}
+    .nav{display:grid;gap:8px}.nav button,.nav a,.pillbtn,.btn{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:999px;padding:10px 14px;cursor:pointer;min-height:42px;transition:.15s ease}
+    .nav button:hover,.pillbtn:hover,.btn:hover,.nav a:hover{transform:translateY(-1px)}
+    .nav button.active,.nav a.active,.btn.primary{background:var(--primary);border-color:var(--primary);color:white}
+    .sidecard{margin-top:auto;padding:14px;border:1px solid var(--border);background:var(--surface2);border-radius:16px}
+    .main{min-width:0} .top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);z-index:5}
+    .grid{max-width:1280px;margin:0 auto;padding:22px;display:grid;gap:18px} .hero,.cards,.two{display:grid;gap:18px}.hero{grid-template-columns:1.2fr .8fr}.cards{grid-template-columns:repeat(4,1fr)} .two{grid-template-columns:1.15fr .85fr}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}.card.soft{background:var(--surface2);box-shadow:none}
+    .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--primary);font-weight:700}.muted{color:var(--muted)} .kpi strong{display:block;font-size:28px;margin-top:6px} .row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start} .stack{display:grid;gap:12px}
+    .item{padding:14px;border-radius:14px;background:var(--surface2);border:1px solid rgba(0,0,0,.03);display:grid;gap:6px} .meta{display:flex;flex-wrap:wrap;gap:8px;color:var(--muted);font-size:13px}
+    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;width:max-content} .good{background:color-mix(in srgb, var(--good) 14%, transparent);color:var(--good)} .warn{background:color-mix(in srgb, var(--warn) 14%, transparent);color:var(--warn)} .bad{background:color-mix(in srgb, var(--bad) 14%, transparent);color:var(--bad)} .info{background:color-mix(in srgb, var(--info) 14%, transparent);color:var(--info)}
+    .form{display:grid;gap:10px}.form label{font-size:13px;font-weight:700} .form input,.form select,.form textarea{width:100%;padding:12px 14px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:12px}
+    .list{display:grid;gap:10px}.toolbar{display:flex;gap:10px;flex-wrap:wrap}.section{display:none}.section.active{display:block}.mobile{display:none}.toplink{position:fixed;right:18px;bottom:18px;z-index:30;display:none}.toplink.show{display:block}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px} .table th,.table td{text-align:left;padding:12px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top} .table th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+    .check{width:18px;height:18px;accent-color:var(--primary)}
+    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);padding:12px 16px;border-radius:999px;z-index:40;display:none}
+    .toast.show{display:block}
+    .footer-note{padding:0 22px 22px;color:var(--muted);font-size:13px}
+    @media (max-width:1000px){.hero,.two,.split{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.app{grid-template-columns:1fr}.side{display:none}.mobile{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:fixed;left:16px;right:16px;bottom:16px;background:color-mix(in srgb, var(--surface) 90%, transparent);backdrop-filter:blur(12px);padding:10px;border:1px solid var(--border);border-radius:18px;z-index:20}}
+    @media (max-width:640px){.cards{grid-template-columns:1fr}.grid{padding:14px}.top{padding:14px}.table th,.table td{padding:10px 8px}}
   </style>
 </head>
 <body>
   <div class="app">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 18 12 4l9 14"></path>
-            <path d="M7 18h10"></path>
-            <path d="M9.6 13h4.8"></path>
-          </svg>
-        </div>
-        <div>
-          <strong>ArquiGest</strong>
-          <span>Estudio y proyectos</span>
-        </div>
+    <aside class="side">
+      <div class="brand"><div class="logo">O</div><div><h1>Obra Clara Pro</h1><div class="muted" style="font-size:12px">Gestión para arquitectos</div></div></div>
+      <div class="nav">
+        <button class="active" data-go="inicio">Inicio</button>
+        <button data-go="obras">Obras</button>
+        <button data-go="tareas">Tareas</button>
+        <button data-go="economia">Economía</button>
+        <button data-go="documentos">Documentos</button>
+        <button data-go="ajustes">Ajustes</button>
       </div>
-
-      <nav class="nav" aria-label="Principal">
-        <a class="active" href="#panel">Panel</a>
-        <a href="#proyectos">Proyectos</a>
-        <a href="#clientes">Clientes</a>
-        <a href="#presupuesto">Presupuesto</a>
-        <a href="#agenda">Agenda</a>
-      </nav>
-
-      <div class="side-card">
-        <strong>Idea MVP</strong>
-        <p>Control de clientes, fases, honorarios, reuniones y cobros, pensado para estudio pequeño.</p>
+      <div class="sidecard">
+        <strong>Guardado local</strong>
+        <div class="muted">Los cambios se guardan en el navegador con localStorage.</div>
       </div>
     </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <div>
-          <h1 id="panel">Estudio de arquitectura</h1>
-          <p>Una primera versión para ordenar proyectos, entregas y cobros.</p>
+    <main class="main" id="contenido">
+      <div class="top">
+        <div><div class="eyebrow">MVP funcional</div><h3 id="pageTitle">Inicio</h3></div>
+        <div class="toolbar">
+          <button class="pillbtn" id="themeBtn">Tema</button>
+          <button class="btn primary" id="addProjectBtn">Nueva obra</button>
         </div>
-        <div class="top-actions">
-          <button class="btn" data-theme-toggle>◐ Tema</button>
-          <button class="btn">Exportar</button>
-          <button class="btn primary">Nuevo proyecto</button>
-        </div>
-      </header>
-
-      <section class="content">
-        <div class="hero">
-          <article class="panel hero-card">
-            <span class="eyebrow">Arquitectos autónomos y estudios pequeños</span>
-            <h2>Menos hojas sueltas. Más control de proyecto.</h2>
-            <p>Este MVP reúne en una sola pantalla el seguimiento de obras, clientes, reuniones, honorarios y estado de cobro.</p>
-            <div class="cta-row">
-              <button class="btn primary">Crear expediente</button>
-              <button class="btn">Ver calendario</button>
+      </div>
+      <div class="grid">
+        <section class="section active" id="inicio">
+          <div class="hero">
+            <div class="card">
+              <div class="eyebrow">Resumen</div>
+              <h2>Controla obras, tareas, documentos y presupuesto desde una sola app.</h2>
+              <p class="muted">Esta versión permite crear obras, añadir tareas, registrar gastos e ingresos, guardar todo en tu navegador y exportar/importar el estado.</p>
             </div>
-          </article>
-
-          <div class="stats">
-            <article class="panel stat">
-              <span>Proyectos activos</span>
-              <strong>12</strong>
-              <small>+2 este mes</small>
-            </article>
-            <article class="panel stat">
-              <span>Honorarios pendientes</span>
-              <strong>18.400 €</strong>
-              <small>4 facturas por emitir</small>
-            </article>
-            <article class="panel stat">
-              <span>Visitas programadas</span>
-              <strong>7</strong>
-              <small>3 esta semana</small>
-            </article>
-            <article class="panel stat">
-              <span>Clientes en revisión</span>
-              <strong>5</strong>
-              <small>Esperando respuesta</small>
-            </article>
+            <div class="card soft">
+              <h3>Hoy</h3>
+              <div class="stack" id="todayStats"></div>
+            </div>
           </div>
-        </div>
-
-        <div class="section-grid">
-          <section class="panel" id="proyectos">
-            <div class="section-head">
-              <div>
-                <h3>Proyectos</h3>
-                <span>Fase, avance y siguiente hito</span>
+          <div class="cards" style="margin-top:18px" id="kpis"></div>
+          <div class="split" style="margin-top:18px">
+            <div class="card">
+              <div class="row">
+                <div><h3>Notas rápidas</h3><div class="muted">Anotaciones internas</div></div>
+                <button class="btn" id="addNoteBtn">Nueva nota</button>
               </div>
-              <button class="btn">Ver todos</button>
+              <div class="stack" id="notesList" style="margin-top:14px"></div>
             </div>
-            <div class="list">
-              <article class="item">
-                <div class="row">
-                  <div>
-                    <strong>Vivienda unifamiliar · Pozuelo</strong>
-                    <div class="meta">Cliente: Marta Llorente · Proyecto básico</div>
-                  </div>
-                  <span class="badge b-open">En curso</span>
-                </div>
-                <div class="progress"><i style="width:68%"></i></div>
-                <div class="row meta"><span>Próximo hito: reunión municipal</span><span>68%</span></div>
-              </article>
-
-              <article class="item">
-                <div class="row">
-                  <div>
-                    <strong>Reforma integral · Chamberí</strong>
-                    <div class="meta">Cliente: Grupo Altea · Mediciones</div>
-                  </div>
-                  <span class="badge b-review">Revisión</span>
-                </div>
-                <div class="progress"><i style="width:42%"></i></div>
-                <div class="row meta"><span>Próximo hito: envío presupuesto</span><span>42%</span></div>
-              </article>
-
-              <article class="item">
-                <div class="row">
-                  <div>
-                    <strong>Licencia local comercial · Lavapiés</strong>
-                    <div class="meta">Cliente: Café Norte · Documentación final</div>
-                  </div>
-                  <span class="badge b-billed">Facturado</span>
-                </div>
-                <div class="progress"><i style="width:91%"></i></div>
-                <div class="row meta"><span>Próximo hito: entrega final</span><span>91%</span></div>
-              </article>
+            <div class="card">
+              <div class="row">
+                <div><h3>Alertas</h3><div class="muted">Vencimientos próximos</div></div>
+                <button class="btn" id="addAlertBtn">Nueva alerta</button>
+              </div>
+              <div class="stack" id="alertsList" style="margin-top:14px"></div>
             </div>
-          </section>
-
-          <div class="mini">
-            <section class="panel" id="clientes">
-              <div class="section-head">
-                <div>
-                  <h3>Clientes</h3>
-                  <span>Seguimiento rápido</span>
-                </div>
-              </div>
-              <div class="list">
-                <article class="item">
-                  <div><strong>Marta Llorente</strong></div>
-                  <div class="meta">Vivienda unifamiliar</div>
-                  <div class="row meta"><span>Último contacto: ayer</span><span>Presupuesto aceptado</span></div>
-                </article>
-                <article class="item">
-                  <div><strong>Grupo Altea</strong></div>
-                  <div class="meta">Reforma integral</div>
-                  <div class="row meta"><span>Último contacto: hace 3 días</span><span>Pendiente de cambios</span></div>
-                </article>
-              </div>
-            </section>
-
-            <section class="panel" id="agenda">
-              <div class="section-head">
-                <div>
-                  <h3>Agenda</h3>
-                  <span>Semana actual</span>
-                </div>
-              </div>
-              <div class="list">
-                <article class="calendar-day">
-                  <div class="date-box">14<br><small>JUL</small></div>
-                  <div>
-                    <strong>Visita de obra</strong>
-                    <div class="meta">Pozuelo · 10:30</div>
-                  </div>
-                </article>
-                <article class="calendar-day">
-                  <div class="date-box">16<br><small>JUL</small></div>
-                  <div>
-                    <strong>Reunión con cliente</strong>
-                    <div class="meta">Online · 18:00</div>
-                  </div>
-                </article>
-              </div>
-            </section>
           </div>
-        </div>
+        </section>
 
-        <div class="section-grid">
-          <section class="panel" id="presupuesto">
-            <div class="section-head">
+        <section class="section" id="obras">
+          <div class="card">
+            <div class="row">
               <div>
-                <h3>Estado económico</h3>
-                <span>Honorarios, cobros y próximas emisiones</span>
+                <h3>Obras</h3>
+                <div class="muted">Alta, seguimiento y estado</div>
               </div>
+              <button class="btn primary" id="newProject2">Añadir obra</button>
             </div>
-            <div class="table-wrap">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Proyecto</th>
-                    <th>Honorarios</th>
-                    <th>Cobrado</th>
-                    <th>Pendiente</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Vivienda Pozuelo</td>
-                    <td>24.000 €</td>
-                    <td>14.000 €</td>
-                    <td>10.000 €</td>
-                  </tr>
-                  <tr>
-                    <td>Reforma Chamberí</td>
-                    <td>9.800 €</td>
-                    <td>3.500 €</td>
-                    <td>6.300 €</td>
-                  </tr>
-                  <tr>
-                    <td>Local Lavapiés</td>
-                    <td>6.200 €</td>
-                    <td>6.200 €</td>
-                    <td>0 €</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="toolbar" style="margin-top:14px">
+              <input id="searchInput" placeholder="Buscar obra, tarea, documento o concepto" style="flex:1;min-width:220px;padding:12px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">
+              <select id="phaseFilter" style="min-width:180px;padding:12px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">
+                <option>Todos</option>
+                <option>Anteproyecto</option>
+                <option>Proyecto básico</option>
+                <option>Licencia</option>
+                <option>Ejecución</option>
+              </select>
             </div>
-            <div class="footer-note">
-              Buen encaje como MVP porque el software para arquitectura suele centrarse en gestión de proyectos, facturación, planificación y documentación.
-            </div>
-          </section>
+            <div class="list" id="projectsList" style="margin-top:14px"></div>
+          </div>
+        </section>
 
-          <section class="panel">
-            <div class="section-head">
-              <div>
-                <h3>Resumen</h3>
-                <span>Indicadores rápidos</span>
+        <section class="section" id="tareas">
+          <div class="two">
+            <div class="card">
+              <div class="row">
+                <div>
+                  <h3>Tareas</h3>
+                  <div class="muted">Pendientes por obra</div>
+                </div>
               </div>
+              <div class="stack" id="tasksList" style="margin-top:14px"></div>
             </div>
-            <div class="list">
-              <article class="item">
-                <span class="meta">Total presupuestado</span>
-                <strong>40.000 €</strong>
-              </article>
-              <article class="item">
-                <span class="meta">Cobrado</span>
-                <strong>23.700 €</strong>
-              </article>
-              <article class="item">
-                <span class="meta">Pendiente</span>
-                <strong>16.300 €</strong>
-              </article>
+            <div class="card">
+              <h3>Nueva tarea</h3>
+              <form class="form" id="taskForm">
+                <div><label>Obra</label><select id="taskProject"></select></div>
+                <div><label>Título</label><input id="taskTitle" required placeholder="Ej. Enviar plano corregido"></div>
+                <div><label>Fecha</label><input id="taskDate" type="date" required></div>
+                <div><label>Prioridad</label><select id="taskPriority"><option>Normal</option><option>Alta</option><option>Urgente</option></select></div>
+                <button class="btn primary" type="submit">Guardar tarea</button>
+              </form>
             </div>
-          </section>
+          </div>
+        </section>
+
+        <section class="section" id="economia">
+          <div class="two">
+            <div class="card">
+              <div class="row">
+                <div>
+                  <h3>Control económico</h3>
+                  <div class="muted">Ingresos, gastos y margen</div>
+                </div>
+              </div>
+              <div class="stack" id="moneyList" style="margin-top:14px"></div>
+            </div>
+            <div class="card">
+              <h3>Movimiento</h3>
+              <form class="form" id="moneyForm">
+                <div><label>Obra</label><select id="moneyProject"></select></div>
+                <div><label>Tipo</label><select id="moneyType"><option>Ingreso</option><option>Gasto</option></select></div>
+                <div><label>Concepto</label><input id="moneyConcept" required placeholder="Ej. Honorarios fase 1"></div>
+                <div><label>Importe</label><input id="moneyAmount" type="number" step="0.01" required></div>
+                <button class="btn primary" type="submit">Guardar</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="documentos">
+          <div class="two">
+            <div class="card">
+              <h3>Documentos</h3>
+              <div class="stack" id="docsList" style="margin-top:14px"></div>
+            </div>
+            <div class="card">
+              <h3>Subir referencia</h3>
+              <form class="form" id="docForm">
+                <div><label>Obra</label><select id="docProject"></select></div>
+                <div><label>Nombre archivo</label><input id="docName" required placeholder="Ej. memoria-basica.pdf"></div>
+                <div><label>Tipo</label><select id="docType"><option>PDF</option><option>DWG</option><option>DOCX</option><option>IMG</option></select></div>
+                <button class="btn primary" type="submit">Guardar documento</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="ajustes">
+          <div class="card">
+            <h3>Ajustes</h3>
+            <p class="muted">Exporta, importa o borra la demo local.</p>
+            <div class="toolbar">
+              <button class="btn" id="exportBtn">Exportar JSON</button>
+              <label class="btn" style="display:inline-flex;align-items:center;gap:8px">
+                <input id="importInput" type="file" accept="application/json" hidden>
+                Importar JSON
+              </label>
+              <button class="btn" id="resetBtn">Borrar datos</button>
+            </div>
+            <pre id="jsonPreview" style="white-space:pre-wrap;margin-top:14px;background:var(--surface2);padding:14px;border-radius:12px;border:1px solid var(--border)"></pre>
+          </div>
+        </section>
+
+        <div class="footer-note">Hecha para GitHub Pages o Cloudflare Pages. Sin dependencias externas.</div>
+      </div>
+
+      <nav class="mobile">
+        <button data-go="inicio" class="active">Inicio</button>
+        <button data-go="obras">Obras</button>
+        <button data-go="tareas">Tareas</button>
+        <button data-go="economia">€</button>
+      </nav>
+
+      <button class="btn toplink" id="topBtn">↑ Arriba</button>
+      <div class="toast" id="toast"></div>
+
+      <div id="projectModal" style="position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;z-index:50;padding:18px">
+        <div class="card" style="max-width:760px;width:100%">
+          <div class="row">
+            <div>
+              <h3 id="modalTitle">Detalle de obra</h3>
+              <div class="muted" id="modalSub"></div>
+            </div>
+            <button class="btn" id="closeModalBtn">Cerrar</button>
+          </div>
+          <div id="modalBody" style="margin-top:14px"></div>
         </div>
-      </section>
+      </div>
     </main>
   </div>
 
   <script>
-    const btn = document.querySelector('[data-theme-toggle]');
-    let dark = false;
-    btn.addEventListener('click', () => {
-      dark = !dark;
-      document.body.style.filter = dark ? 'invert(1) hue-rotate(180deg)' : 'none';
+    const KEY='obra-clara-pro-v4';
+    const seed={
+      projects:[
+        {id:1,name:'Rehabilitación Chamberí',client:'Inversora Luma',phase:'Ejecución',status:'En plazo',budget:120000,spent:76000,notes:'Visita de obra completada.'},
+        {id:2,name:'Local comercial Salamanca',client:'Benta Studio',phase:'Licencia',status:'Bloqueado',budget:45000,spent:9000,notes:'Falta respuesta municipal.'},
+        {id:3,name:'Vivienda unifamiliar Pozuelo',client:'Familia R.',phase:'Proyecto básico',status:'Urgente',budget:98000,spent:22000,notes:'Cerrar memoria y plano de instalaciones.'}
+      ],
+      tasks:[
+        {id:1,projectId:1,title:'Subir acta de visita',date:'2026-07-19',priority:'Alta',done:false},
+        {id:2,projectId:2,title:'Enviar plano corregido',date:'2026-07-20',priority:'Urgente',done:false}
+      ],
+      money:[
+        {id:1,projectId:1,type:'Ingreso',concept:'Honorarios fase 2',amount:18000,date:'2026-07-18'},
+        {id:2,projectId:1,type:'Gasto',concept:'Industrial estructura',amount:5200,date:'2026-07-17'}
+      ],
+      docs:[
+        {id:1,projectId:3,name:'memoria-basica.pdf',type:'PDF',date:'2026-07-19'}
+      ],
+      notes:[
+        {id:1,projectId:1,title:'Revisar mediciones',body:'Antes de cerrar el presupuesto',date:'2026-07-19'}
+      ],
+      alerts:[
+        {id:1,text:'Entregar documentación de Pozuelo',date:'2026-07-23'}
+      ]
+    };
+
+    let state = load();
+    const $ = s => document.querySelector(s);
+    const fmt = n => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n);
+
+    function load(){
+      try {
+        return JSON.parse(localStorage.getItem(KEY)) || JSON.parse(JSON.stringify(seed));
+      } catch {
+        return JSON.parse(JSON.stringify(seed));
+      }
+    }
+    function save(){
+      localStorage.setItem(KEY, JSON.stringify(state));
+      render();
+      toast('Guardado');
+    }
+    function toast(msg){
+      const t=$('#toast');
+      t.textContent=msg;
+      t.classList.add('show');
+      clearTimeout(window.__toast);
+      window.__toast=setTimeout(()=>t.classList.remove('show'),1400);
+    }
+    function projectName(id){
+      return (state.projects.find(p=>p.id==id)||{}).name||'—'
+    }
+    function statusBadge(s){
+      const c=s==='En plazo'?'good':s==='Bloqueado'?'warn':'bad';
+      return `<span class="badge ${c}">${s}</span>`
+    }
+    function scrollTopSmooth(){
+      window.scrollTo({top:0,behavior:'smooth'})
+    }
+    function projectProgress(p){
+      const pct=Math.max(0,Math.min(100,p.budget ? Math.round((p.spent/p.budget)*100) : 0));
+      return `<div style="margin-top:8px;height:10px;background:var(--surface2);border-radius:999px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--primary)"></div></div><div class="meta"><span>${pct}% ejecutado</span><span>${fmt(p.spent)} / ${fmt(p.budget)}</span></div>`
+    }
+    function calc(){
+      const income=state.money.filter(m=>m.type==='Ingreso').reduce((a,b)=>a+b.amount,0);
+      const expense=state.money.filter(m=>m.type==='Gasto').reduce((a,b)=>a+b.amount,0);
+      return {
+        income,
+        expense,
+        margin:income-expense,
+        openTasks:state.tasks.filter(t=>!t.done).length,
+        urgent:state.projects.filter(p=>p.status==='Urgente').length,
+        overBudget:state.projects.filter(p=>p.budget&&p.spent>p.budget).length
+      }
+    }
+    function updateKpis(){
+      const k=calc();
+      return [
+        ['Obras activas',state.projects.length],
+        ['Tareas abiertas',k.openTasks],
+        ['Docs',state.docs.length],
+        ['Presupuestos superados',k.overBudget]
+      ].map(([a,b])=>`<div class="card kpi"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('')
+    }
+    function renderOptions(){
+      const options=state.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+      ['#taskProject','#moneyProject','#docProject'].forEach(id=>{
+        const el=$(id);
+        if(el) el.innerHTML=options;
+      });
+    }
+    function renderNotes(){
+      $('#notesList').innerHTML=(state.notes||[]).map(n=>`<div class="item"><div class="row"><div><strong>${n.title}</strong><div class="muted">${n.body}</div></div><button class="btn" data-del-note="${n.id}">Borrar</button></div></div>`).join('') || '<div class="item">Sin notas</div>';
+    }
+    function renderAlerts(){
+      $('#alertsList').innerHTML=(state.alerts||[]).map(a=>`<div class="item"><div class="row"><div><strong>${a.text}</strong><div class="muted">${a.date}</div></div><button class="btn" data-del-alert="${a.id}">Borrar</button></div></div>`).join('') || '<div class="item">Sin alertas</div>';
+    }
+    function openProjectModal(id){
+      const p=state.projects.find(x=>x.id==id);
+      if(!p) return;
+      $('#modalTitle').textContent=p.name;
+      $('#modalSub').textContent=p.client+' · '+p.phase;
+      const pt=state.tasks.filter(t=>t.projectId==id);
+      const pm=state.money.filter(m=>m.projectId==id);
+      const pd=state.docs.filter(d=>d.projectId==id);
+      $('#modalBody').innerHTML=`<div class="split"><div><h3 style="font-size:16px;margin-bottom:8px">Tareas</h3>${pt.map(t=>`<div class="item"><strong>${t.title}</strong><div class="meta"><span>${t.date}</span><span>${t.priority}</span></div></div>`).join('')||'<div class="item">Sin tareas</div>'}</div><div><h3 style="font-size:16px;margin-bottom:8px">Documentos</h3>${pd.map(d=>`<div class="item"><strong>${d.name}</strong><div class="meta"><span>${d.type}</span><span>${d.date}</span></div></div>`).join('')||'<div class="item">Sin documentos</div>'}</div></div><div style="margin-top:14px"><h3 style="font-size:16px;margin-bottom:8px">Economía</h3>${pm.map(m=>`<div class="item"><div class="row"><strong>${m.concept}</strong><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong></div></div>`).join('')||'<div class="item">Sin movimientos</div>'}</div>`;
+      $('#projectModal').style.display='flex';
+    }
+
+    function render(){
+      const q=($('#searchInput')?.value||'').toLowerCase();
+      const phase=($('#phaseFilter')?.value||'Todos');
+      $('#kpis').innerHTML=updateKpis();
+      const k=calc();
+      $('#todayStats').innerHTML=[
+        ['Visitas',state.tasks.filter(t=>t.date==='2026-07-19').length],
+        ['Obras críticas',k.urgent],
+        ['Alertas',state.alerts.length]
+      ].map(([a,b])=>`<div class="item"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('');
+
+      const projects=state.projects.filter(p=>`${p.name} ${p.client} ${p.phase} ${p.status} ${p.notes}`.toLowerCase().includes(q) && (phase==='Todos' || p.phase===phase));
+      $('#projectsList').innerHTML=projects.map(p=>`<div class="item"><div class="row"><div><strong>${p.name}</strong><div class="meta"><span>${p.client}</span><span>${p.phase}</span><span>${p.budget?fmt(p.budget):'Sin presupuesto'}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">${statusBadge(p.status)}<button class="btn" data-view-project="${p.id}">Ver</button><button class="btn" data-edit-project="${p.id}">Editar</button><button class="btn" data-del-project="${p.id}">Borrar</button></div></div><div class="muted">${p.notes}</div>${projectProgress(p)}</div>`).join('') || '<div class="item">Sin resultados</div>';
+
+      $('#tasksList').innerHTML=state.tasks.filter(t=>`${t.title} ${projectName(t.projectId)} ${t.priority}`.toLowerCase().includes(q)).map(t=>`<div class="item"><div class="row"><div><strong>${t.title}</strong><div class="meta"><span>${projectName(t.projectId)}</span><span>${t.date}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><span class="badge ${t.priority==='Urgente'?'bad':t.priority==='Alta'?'warn':'good'}">${t.priority}</span><button class="btn" data-edit-task="${t.id}">Editar</button><button class="btn" data-del-task="${t.id}">Borrar</button></div></div><label class="meta"><input class="check" type="checkbox" data-task-done="${t.id}" ${t.done?'checked':''}> Marcar como hecha</label></div>`).join('') || '<div class="item">Sin resultados</div>';
+
+      $('#moneyList').innerHTML=state.money.filter(m=>`${m.concept} ${projectName(m.projectId)} ${m.type}`.toLowerCase().includes(q)).map(m=>`<div class="item"><div class="row"><div><strong>${m.concept}</strong><div class="meta"><span>${projectName(m.projectId)}</span><span>${m.date}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong><button class="btn" data-edit-money="${m.id}">Editar</button><button class="btn" data-del-money="${m.id}">Borrar</button></div></div></div>`).join('') || '<div class="item">Sin resultados</div>';
+
+      $('#docsList').innerHTML=state.docs.filter(d=>`${d.name} ${projectName(d.projectId)} ${d.type}`.toLowerCase().includes(q)).map(d=>`<div class="item"><div class="row"><div><strong>${d.name}</strong><div class="meta"><span>${projectName(d.projectId)}</span><span>${d.type}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><span class="badge info">Guardado</span><button class="btn" data-edit-doc="${d.id}">Editar</button><button class="btn" data-del-doc="${d.id}">Borrar</button></div></div></div>`).join('') || '<div class="item">Sin resultados</div>';
+
+      renderOptions();
+      renderNotes();
+      renderAlerts();
+      $('#jsonPreview').textContent=JSON.stringify(state,null,2);
+      $('#topBtn').classList.toggle('show', window.scrollY > 300);
+    }
+
+    function setSection(id){
+      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===id));
+      document.querySelectorAll('[data-go]').forEach(b=>b.classList.toggle('active',b.dataset.go===id));
+      $('#pageTitle').textContent=id.charAt(0).toUpperCase()+id.slice(1);
+      scrollTopSmooth();
+    }
+    document.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>setSection(el.dataset.go)));
+
+    document.addEventListener('click',e=>{
+      const d=e.target.dataset;
+      if(d.taskDone){
+        const task=state.tasks.find(x=>x.id==d.taskDone);
+        if(task){task.done=e.target.checked; save();}
+      }
+      if(d.delProject){
+        if(confirm('¿Borrar obra?')){
+          state.projects=state.projects.filter(x=>x.id!=d.delProject);
+          state.tasks=state.tasks.filter(x=>x.projectId!=d.delProject);
+          state.money=state.money.filter(x=>x.projectId!=d.delProject);
+          state.docs=state.docs.filter(x=>x.projectId!=d.delProject);
+          save();
+        }
+      }
+      if(d.delTask){ if(confirm('¿Borrar tarea?')){ state.tasks=state.tasks.filter(x=>x.id!=d.delTask); save(); } }
+      if(d.delMoney){ if(confirm('¿Borrar movimiento?')){ state.money=state.money.filter(x=>x.id!=d.delMoney); save(); } }
+      if(d.delDoc){ if(confirm('¿Borrar documento?')){ state.docs=state.docs.filter(x=>x.id!=d.delDoc); save(); } }
+      if(d.delNote){ state.notes=(state.notes||[]).filter(x=>x.id!=d.delNote); save(); }
+      if(d.delAlert){ state.alerts=(state.alerts||[]).filter(x=>x.id!=d.delAlert); save(); }
+      if(d.viewProject){ openProjectModal(d.viewProject); }
+      if(d.editProject){
+        const p=state.projects.find(x=>x.id==d.editProject);
+        if(!p) return;
+        p.name=prompt('Nombre',p.name)||p.name;
+        p.client=prompt('Cliente',p.client)||p.client;
+        p.phase=prompt('Fase',p.phase)||p.phase;
+        p.status=prompt('Estado',p.status)||p.status;
+        p.notes=prompt('Notas',p.notes)||p.notes;
+        
+        const bPrompt = prompt('Presupuesto', p.budget);
+        if(bPrompt !== null && bPrompt.trim() !== "") {
+          const bVal = Number(bPrompt);
+          if(!isNaN(bVal)) p.budget = bVal;
+        }
+        const sPrompt = prompt('Gastado', p.spent);
+        if(sPrompt !== null && sPrompt.trim() !== "") {
+          const sVal = Number(sPrompt);
+          if(!isNaN(sVal)) p.spent = sVal;
+        }
+        save();
+      }
+      if(d.editTask){
+        const t=state.tasks.find(x=>x.id==d.editTask);
+        if(!t) return;
+        t.title=prompt('Título',t.title)||t.title;
+        t.date=prompt('Fecha YYYY-MM-DD',t.date)||t.date;
+        t.priority=prompt('Prioridad',t.priority)||t.priority;
+        save();
+      }
+      if(d.editMoney){
+        const m=state.money.find(x=>x.id==d.editMoney);
+        if(!m) return;
+        m.concept=prompt('Concepto',m.concept)||m.concept;
+        m.type=prompt('Tipo (Ingreso/Gasto)',m.type)||m.type;
+        const amPrompt = prompt('Importe', m.amount);
+        if(amPrompt !== null && amPrompt.trim() !== "") {
+          const amVal = Number(amPrompt);
+          if(!isNaN(amVal)) m.amount = amVal;
+        }
+        save();
+      }
+      if(d.editDoc){
+        const doc=state.docs.find(x=>x.id==d.editDoc);
+        if(!doc) return;
+        doc.name=prompt('Nombre',doc.name)||doc.name;
+        doc.type=prompt('Tipo',doc.type)||doc.type;
+        save();
+      }
     });
+
+    $('#searchInput')?.addEventListener('input',render);
+    $('#phaseFilter')?.addEventListener('change',render);
+
+    $('#taskForm').onsubmit=e=>{
+      e.preventDefault();
+      const pId = +$('#taskProject').value;
+      if(!pId) return toast('Crea primero una obra');
+      const title=$('#taskTitle').value.trim();
+      if(state.tasks.some(t=>t.title.toLowerCase()===title.toLowerCase() && t.projectId==pId)) return toast('Tarea duplicada');
+      state.tasks.unshift({id:Date.now(),projectId:pId,title,date:$('#taskDate').value,priority:$('#taskPriority').value,done:false});
+      e.target.reset();
+      if($('#searchInput')) $('#searchInput').value = '';
+      save();
+      setSection('tareas');
+    };
+
+    $('#moneyForm').onsubmit=e=>{
+      e.preventDefault();
+      const pId = +$('#moneyProject').value;
+      if(!pId) return toast('Crea primero una obra');
+      state.money.unshift({id:Date.now(),projectId:pId,type:$('#moneyType').value,concept:$('#moneyConcept').value,amount:+$('#moneyAmount').value,date:new Date().toISOString().slice(0,10)});
+      e.target.reset();
+      if($('#searchInput')) $('#searchInput').value = '';
+      save();
+      setSection('economia');
+    };
+
+    $('#docForm').onsubmit=e=>{
+      e.preventDefault();
+      const pId = +$('#docProject').value;
+      if(!pId) return toast('Crea primero una obra');
+      state.docs.unshift({id:Date.now(),projectId:pId,name:$('#docName').value,type:$('#docType').value,date:new Date().toISOString().slice(0,10)});
+      e.target.reset();
+      if($('#searchInput')) $('#searchInput').value = '';
+      save();
+      setSection('documentos');
+    };
+
+    function addProject(){
+      const name=prompt('Nombre de la obra');
+      if(!name || !name.trim()) return;
+      if(state.projects.some(p=>p.name.toLowerCase()===name.trim().toLowerCase())) return toast('Ya existe una obra con ese nombre');
+      const client=prompt('Cliente');
+      if(!client || !client.trim()) return;
+      state.projects.unshift({id:Date.now(),name:name.trim(),client:client.trim(),phase:'Anteproyecto',status:'En plazo',budget:0,spent:0,notes:'Nueva obra creada.'});
+      save();
+      setSection('obras');
+    }
+
+    $('#addProjectBtn').onclick=()=>{addProject();};
+    $('#newProject2').onclick=()=>{addProject();};
+
+    $('#themeBtn').onclick=()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'; toast('Tema cambiado');};
+    $('#exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='obra-clara-pro.json'; a.click(); toast('Exportado');};
+    $('#importInput').onchange=async e=>{
+      const file=e.target.files[0];
+      if(!file) return;
+      try{
+        const parsed = JSON.parse(await file.text());
+        if(parsed && parsed.projects && parsed.tasks){
+          state=parsed;
+          save();
+          toast('Importado');
+        } else {
+          toast('Estructura JSON inválida');
+        }
+      }catch{
+        toast('JSON malformado');
+      }
+    };
+    $('#resetBtn').onclick=()=>{
+      if(confirm('¿Borrar todos los datos locales?')){
+        localStorage.removeItem(KEY); 
+        state=JSON.parse(JSON.stringify(seed)); 
+        save(); 
+        toast('Datos borrados');
+      }
+    };
+
+    window.addEventListener('scroll',()=>$('#topBtn').classList.toggle('show', window.scrollY > 300));
+    $('#topBtn').onclick=()=>scrollTopSmooth();
+    $('#closeModalBtn').onclick=()=>$('#projectModal').style.display='none';
+    $('#projectModal').addEventListener('click',e=>{if(e.target.id==='projectModal') $('#projectModal').style.display='none';});
+    $('#addNoteBtn')?.addEventListener('click',()=>{
+      const title=prompt('Título');
+      if(!title) return;
+      const body=prompt('Contenido')||'';
+      if(!state.notes) state.notes = [];
+      state.notes.unshift({id:Date.now(),title,body,date:new Date().toISOString().slice(0,10)});
+      save();
+    });
+    $('#addAlertBtn')?.addEventListener('click',()=>{
+      const text=prompt('Alerta');
+      if(!text) return;
+      const date=prompt('Fecha YYYY-MM-DD',new Date().toISOString().slice(0,10))||new Date().toISOString().slice(0,10);
+      if(!state.alerts) state.alerts = [];
+      state.alerts.unshift({id:Date.now(),text,date});
+      save();
+    });
+
+    render();
   </script>
 </body>
 </html>
