@@ -44,6 +44,9 @@
     #projectModal{position:fixed;inset:0;background:rgba(31,29,24,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:150;padding:20px}
     #projectModal .card{max-width:760px;width:100%;max-height:calc(100vh - 120px);overflow-y:auto;display:flex;flex-direction:column;gap:16px}
     
+    /* Contenedor unificado para centrado horizontal de botoneras inferiores */
+    .card-actions-centered{display:flex;gap:12px;margin-top:12px;border-top:1px solid var(--border);padding-top:10px;justify-content:center;flex-wrap:wrap}
+
     @media (max-width:1000px){
       .hero,.two,.split{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.app{grid-template-columns:1fr}.side{display:none}
       .grid{padding-bottom:100px}
@@ -361,7 +364,6 @@
       
       $('#modalBody').innerHTML = `
         <form class="form" id="editProjectForm">
-          <input type="hidden" id="editProjId" value="${p.id}">
           <div><label>Nombre de la Obra</label><input id="editProjName" value="${p.name}" required></div>
           <div><label>Cliente</label><input id="editProjClient" value="${p.client}" required></div>
           <div class="split">
@@ -388,7 +390,7 @@
             <div><label>Gastado (€)</label><input type="number" step="0.01" id="editProjSpent" value="${p.spent}"></div>
           </div>
           <div><label>Notas internas</label><textarea id="editProjNotes" rows="3">${p.notes}</textarea></div>
-          <div style="margin-top:14px; display:flex; gap:10px; justify-content:flex-end;">
+          <div class="card-actions-centered" style="border:none; margin-top:14px;">
             <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
             <button type="submit" class="btn primary">Guardar Cambios</button>
           </div>
@@ -407,7 +409,130 @@
         $('#projectModal').style.display='none';
         save();
       };
-      
+      $('#projectModal').style.display='flex';
+    }
+
+    function openEditTaskModal(id){
+      const t=state.tasks.find(x=>x.id==id);
+      if(!t) return;
+      $('#modalTitle').textContent = "Editar Tarea";
+      $('#modalSub').textContent = t.title;
+
+      const opts = state.projects.map(p=>`<option value="${p.id}" ${p.id==t.projectId?'selected':''}>${p.name}</option>`).join('');
+
+      $('#modalBody').innerHTML = `
+        <form class="form" id="editTaskForm">
+          <div><label>Obra Vinculada</label><select id="editTaskProj">${opts}</select></div>
+          <div><label>Título de la Tarea</label><input id="editTaskTitle" value="${t.title}" required></div>
+          <div class="split">
+            <div><label>Vencimiento</label><input type="date" id="editTaskDate" value="${t.date}" required></div>
+            <div>
+              <label>Prioridad</label>
+              <select id="editTaskPriority">
+                <option ${t.priority==='Normal'?'selected':''}>Normal</option>
+                <option ${t.priority==='Alta'?'selected':''}>Alta</option>
+                <option ${t.priority==='Urgente'?'selected':''}>Urgente</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
+            <button type="submit" class="btn primary">Guardar Tarea</button>
+          </div>
+        </form>
+      `;
+
+      $('#editTaskForm').onsubmit = e => {
+        e.preventDefault();
+        t.projectId = +$('#editTaskProj').value;
+        t.title = $('#editTaskTitle').value.trim();
+        t.date = $('#editTaskDate').value;
+        t.priority = $('#editTaskPriority').value;
+        $('#projectModal').style.display='none';
+        save();
+      };
+      $('#projectModal').style.display='flex';
+    }
+
+    function openEditMoneyModal(id){
+      const m=state.money.find(x=>x.id==id);
+      if(!m) return;
+      $('#modalTitle').textContent = "Editar Movimiento Financiero";
+      $('#modalSub').textContent = m.concept;
+
+      const opts = state.projects.map(p=>`<option value="${p.id}" ${p.id==m.projectId?'selected':''}>${p.name}</option>`).join('');
+
+      $('#modalBody').innerHTML = `
+        <form class="form" id="editMoneyForm">
+          <div><label>Obra Vinculada</label><select id="editMoneyProj">${opts}</select></div>
+          <div class="split">
+            <div>
+              <label>Tipo de flujo</label>
+              <select id="editMoneyType">
+                <option ${m.type==='Ingreso'?'selected':''}>Ingreso</option>
+                <option ${m.type==='Gasto'?'selected':''}>Gasto</option>
+              </select>
+            </div>
+            <div><label>Importe Total (€)</label><input type="number" step="0.01" id="editMoneyAmount" value="${m.amount}" required></div>
+          </div>
+          <div><label>Concepto descriptivo</label><input id="editMoneyConcept" value="${m.concept}" required></div>
+          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
+            <button type="submit" class="btn primary">Guardar Registro</button>
+          </div>
+        </form>
+      `;
+
+      $('#editMoneyForm').onsubmit = e => {
+        e.preventDefault();
+        m.projectId = +$('#editMoneyProj').value;
+        m.type = $('#editMoneyType').value;
+        m.amount = Number($('#editMoneyAmount').value) || 0;
+        m.concept = $('#editMoneyConcept').value.trim();
+        $('#projectModal').style.display='none';
+        save();
+      };
+      $('#projectModal').style.display='flex';
+    }
+
+    function openEditDocModal(id){
+      const doc=state.docs.find(x=>x.id==id);
+      if(!doc) return;
+      $('#modalTitle').textContent = "Editar Referencia de Documento";
+      $('#modalSub').textContent = doc.name;
+
+      const opts = state.projects.map(p=>`<option value="${p.id}" ${p.id==doc.projectId?'selected':''}>${p.name}</option>`).join('');
+
+      $('#modalBody').innerHTML = `
+        <form class="form" id="editDocForm">
+          <div><label>Obra Relacionada</label><select id="editDocProj">${opts}</select></div>
+          <div class="split">
+            <div><label>Nombre del Archivo</label><input id="editDocName" value="${doc.name}" required></div>
+            <div>
+              <label>Formato / Extensión</label>
+              <select id="editDocType">
+                <option ${doc.type==='PDF'?'selected':''}>PDF</option>
+                <option ${doc.type==='DWG'?'selected':''}>DWG</option>
+                <option ${doc.type==='DOCX'?'selected':''}>DOCX</option>
+                <option ${doc.type==='IMG'?'selected':''}>IMG</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
+            <button type="submit" class="btn primary">Actualizar Datos</button>
+          </div>
+        </form>
+      `;
+
+      $('#editDocForm').onsubmit = e => {
+        e.preventDefault();
+        doc.projectId = +$('#editDocProj').value;
+        doc.name = $('#editDocName').value.trim();
+        doc.type = $('#editDocType').value;
+        $('#projectModal').style.display='none';
+        save();
+      };
       $('#projectModal').style.display='flex';
     }
 
@@ -420,27 +545,21 @@
         ['Visitas',state.tasks.filter(t=>t.date==='2026-07-19').length],
         ['Obras críticas',k.urgent],
         ['Alertas',state.alerts.length]
-      ].map(([a,b])=>`<div class="item"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('');
+      ].map(([a,b])=>`<div class="item"><div class="muted">${a}</div>exportBtn<strong>${b}</strong></div>`).join('');
 
       const projects=state.projects.filter(p=>`${p.name} ${p.client} ${p.phase} ${p.status} ${p.notes}`.toLowerCase().includes(q) && (phase==='Todos' || p.phase===phase));
-      
-      /* Renderizado modificado: bloque de botones movido a la parte inferior de la tarjeta */
       $('#projectsList').innerHTML=projects.map(p=>`
         <div class="item">
           <div class="row">
             <div>
               <strong>${p.name}</strong>
-              <div class="meta">
-                <span>${p.client}</span>
-                <span>${p.phase}</span>
-                <span>${p.budget?fmt(p.budget):'Sin presupuesto'}</span>
-              </div>
+              <div class="meta"><span>${p.client}</span><span>${p.phase}</span><span>${p.budget?fmt(p.budget):'Sin presupuesto'}</span></div>
             </div>
             <div>${statusBadge(p.status)}</div>
           </div>
           <div class="muted" style="margin-top:4px">${p.notes}</div>
           ${projectProgress(p)}
-          <div style="display:flex; gap:8px; margin-top:12px; border-top:1px solid var(--border); padding-top:10px; justify-content:flex-end;">
+          <div class="card-actions-centered">
             <button class="btn action-view" data-view-project="${p.id}">Ver</button>
             <button class="btn action-edit" data-edit-project="${p.id}">Editar</button>
             <button class="btn action-delete" data-del-project="${p.id}">Borrar</button>
@@ -448,11 +567,45 @@
         </div>
       `).join('') || '<div class="item">Sin resultados</div>';
 
-      $('#tasksList').innerHTML=state.tasks.filter(t=>`${t.title} ${projectName(t.projectId)} ${t.priority}`.toLowerCase().includes(q)).map(t=>`<div class="item"><div class="row"><div><strong>${t.title}</strong><div class="meta"><span>${projectName(t.projectId)}</span><span>${t.date}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><span class="badge ${t.priority==='Urgente'?'bad':t.priority==='Alta'?'warn':'good'}">${t.priority}</span><button class="btn action-edit" data-edit-task="${t.id}">Editar</button><button class="btn action-delete" data-del-task="${t.id}">Borrar</button></div></div><label class="meta"><input class="check" type="checkbox" data-task-done="${t.id}" ${t.done?'checked':''}> Marcar como hecha</label></div>`).join('') || '<div class="item">Sin resultados</div>';
+      $('#tasksList').innerHTML=state.tasks.filter(t=>`${t.title} ${projectName(t.projectId)} ${t.priority}`.toLowerCase().includes(q)).map(t=>`
+        <div class="item">
+          <div class="row">
+            <div><strong>${t.title}</strong><div class="meta"><span>${projectName(t.projectId)}</span><span>${t.date}</span></div></div>
+            <div><span class="badge ${t.priority==='Urgente'?'bad':t.priority==='Alta'?'warn':'good'}">${t.priority}</span></div>
+          </div>
+          <label class="meta" style="margin-top:4px"><input class="check" type="checkbox" data-task-done="${t.id}" ${t.done?'checked':''}> Marcar como hecha</label>
+          <div class="card-actions-centered">
+            <button class="btn action-edit" data-edit-task="${t.id}">Editar</button>
+            <button class="btn action-delete" data-del-task="${t.id}">Borrar</button>
+          </div>
+        </div>
+      `).join('') || '<div class="item">Sin resultados</div>';
 
-      $('#moneyList').innerHTML=state.money.filter(m=>`${m.concept} ${projectName(m.projectId)} ${m.type}`.toLowerCase().includes(q)).map(m=>`<div class="item"><div class="row"><div><strong>${m.concept}</strong><div class="meta"><span>${projectName(m.projectId)}</span><span>${m.date}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong><button class="btn" data-edit-money="${m.id}">Editar</button><button class="btn action-delete" data-del-money="${m.id}">Borrar</button></div></div></div>`).join('') || '<div class="item">Sin resultados</div>';
+      $('#moneyList').innerHTML=state.money.filter(m=>`${m.concept} ${projectName(m.projectId)} ${m.type}`.toLowerCase().includes(q)).map(m=>`
+        <div class="item">
+          <div class="row">
+            <div><strong>${m.concept}</strong><div class="meta"><span>${projectName(m.projectId)}</span><span>${m.date}</span></div></div>
+            <div><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong></div>
+          </div>
+          <div class="card-actions-centered">
+            <button class="btn action-edit" data-edit-money="${m.id}">Editar</button>
+            <button class="btn action-delete" data-del-money="${m.id}">Borrar</button>
+          </div>
+        </div>
+      `).join('') || '<div class="item">Sin resultados</div>';
 
-      $('#docsList').innerHTML=state.docs.filter(d=>`${d.name} ${projectName(d.projectId)} ${d.type}`.toLowerCase().includes(q)).map(d=>`<div class="item"><div class="row"><div><strong>${d.name}</strong><div class="meta"><span>${projectName(d.projectId)}</span><span>${d.type}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><span class="badge info">Guardado</span><button class="btn action-edit" data-edit-doc="${d.id}">Editar</button><button class="btn" data-del-doc="${d.id}">Borrar</button></div></div></div>`).join('') || '<div class="item">Sin resultados</div>';
+      $('#docsList').innerHTML=state.docs.filter(d=>`${d.name} ${projectName(d.projectId)} ${d.type}`.toLowerCase().includes(q)).map(d=>`
+        <div class="item">
+          <div class="row">
+            <div><strong>${d.name}</strong><div class="meta"><span>${projectName(d.projectId)}</span><span>${d.type}</span></div></div>
+            <div><span class="badge info">Guardado</span></div>
+          </div>
+          <div class="card-actions-centered">
+            <button class="btn action-edit" data-edit-doc="${d.id}">Editar</button>
+            <button class="btn action-delete" data-del-doc="${d.id}">Borrar</button>
+          </div>
+        </div>
+      `).join('') || '<div class="item">Sin resultados</div>';
 
       renderOptions();
       renderNotes();
@@ -490,33 +643,9 @@
       if(d.delAlert){ state.alerts=(state.alerts||[]).filter(x=>x.id!=d.delAlert); save(); }
       if(d.viewProject){ openProjectModal(d.viewProject); }
       if(d.editProject){ openEditProjectModal(d.editProject); }
-      if(d.editTask){
-        const t=state.tasks.find(x=>x.id==d.editTask);
-        if(!t) return;
-        t.title=prompt('Título',t.title)||t.title;
-        t.date=prompt('Fecha YYYY-MM-DD',t.date)||t.date;
-        t.priority=prompt('Prioridad',t.priority)||t.priority;
-        save();
-      }
-      if(d.editMoney){
-        const m=state.money.find(x=>x.id==d.editMoney);
-        if(!m) return;
-        m.concept=prompt('Concepto',m.concept)||m.concept;
-        m.type=prompt('Tipo (Ingreso/Gasto)',m.type)||m.type;
-        const amPrompt = prompt('Importe', m.amount);
-        if(amPrompt !== null && amPrompt.trim() !== "") {
-          const amVal = Number(amPrompt);
-          if(!isNaN(amVal)) m.amount = amVal;
-        }
-        save();
-      }
-      if(d.editDoc){
-        const doc=state.docs.find(x=>x.id==d.editDoc);
-        if(!doc) return;
-        doc.name=prompt('Nombre',doc.name)||doc.name;
-        doc.type=prompt('Tipo',doc.type)||doc.type;
-        save();
-      }
+      if(d.editTask){ openEditTaskModal(d.editTask); }
+      if(d.editMoney){ openEditMoneyModal(d.editMoney); }
+      if(d.editDoc){ openEditDocModal(d.editDoc); }
     });
 
     $('#searchInput')?.addEventListener('input',render);
