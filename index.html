@@ -28,11 +28,26 @@
     .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px} .table th,.table td{text-align:left;padding:12px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top} .table th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
     .check{width:18px;height:18px;accent-color:var(--primary)}
-    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);padding:12px 16px;border-radius:999px;z-index:40;display:none}
+    
+    /* Paleta de colores mejorada para botones de acción */
+    .btn.action-view{background:color-mix(in srgb, var(--primary) 10%, transparent);border-color:var(--primary);color:var(--primary)}
+    .btn.action-view:hover{background:var(--primary);color:white}
+    .btn.action-edit{background:color-mix(in srgb, var(--info) 12%, transparent);border-color:var(--info);color:var(--info)}
+    .btn.action-edit:hover{background:var(--info);color:white}
+    .btn.action-delete{background:color-mix(in srgb, var(--bad) 12%, transparent);border-color:var(--bad);color:var(--bad)}
+    .btn.action-delete:hover{background:var(--bad);color:white}
+    .btn.secondary-neutral{background:var(--surface2);border-color:var(--border);color:var(--text)}
+
+    .toast{position:fixed;left:50%;top:24px;bottom:auto;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);padding:12px 16px;border-radius:999px;z-index:100;display:none}
     .toast.show{display:block}
     .footer-note{padding:0 22px 22px;color:var(--muted);font-size:13px}
-    @media (max-width:1000px){.hero,.two,.split{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.app{grid-template-columns:1fr}.side{display:none}.mobile{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:fixed;left:16px;right:16px;bottom:16px;background:color-mix(in srgb, var(--surface) 90%, transparent);backdrop-filter:blur(12px);padding:10px;border:1px solid var(--border);border-radius:18px;z-index:20}}
-    @media (max-width:640px){.cards{grid-template-columns:1fr}.grid{padding:14px}.top{padding:14px}.table th,.table td{padding:10px 8px}}
+    
+    @media (max-width:1000px){
+      .hero,.two,.split{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.app{grid-template-columns:1fr}.side{display:none}
+      .grid{padding-bottom:90px}
+      .mobile{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:fixed;left:0;right:0;bottom:0;background:var(--surface);padding:12px 16px 20px;border-top:1px solid var(--border);border-radius:0;z-index:90;box-shadow:0 -4px 20px rgba(0,0,0,.04)}
+    }
+    @media (max-width:640px){.cards{grid-template-columns:1fr}.grid{padding:14px;padding-bottom:90px}.top{padding:14px}.table th,.table td{padding:10px 8px}}
   </style>
 </head>
 <body>
@@ -57,7 +72,6 @@
         <div><div class="eyebrow">MVP funcional</div><h3 id="pageTitle">Inicio</h3></div>
         <div class="toolbar">
           <button class="pillbtn" id="themeBtn">Tema</button>
-          <button class="btn primary" id="addProjectBtn">Nueva obra</button>
         </div>
       </div>
       <div class="grid">
@@ -78,14 +92,14 @@
             <div class="card">
               <div class="row">
                 <div><h3>Notas rápidas</h3><div class="muted">Anotaciones internas</div></div>
-                <button class="btn" id="addNoteBtn">Nueva nota</button>
+                <button class="btn primary" id="addNoteBtn">Nueva nota</button>
               </div>
               <div class="stack" id="notesList" style="margin-top:14px"></div>
             </div>
             <div class="card">
               <div class="row">
                 <div><h3>Alertas</h3><div class="muted">Vencimientos próximos</div></div>
-                <button class="btn" id="addAlertBtn">Nueva alerta</button>
+                <button class="btn primary" id="addAlertBtn">Nueva alerta</button>
               </div>
               <div class="stack" id="alertsList" style="margin-top:14px"></div>
             </div>
@@ -186,12 +200,12 @@
             <h3>Ajustes</h3>
             <p class="muted">Exporta, importa o borra la demo local.</p>
             <div class="toolbar">
-              <button class="btn" id="exportBtn">Exportar JSON</button>
-              <label class="btn" style="display:inline-flex;align-items:center;gap:8px">
+              <button class="btn primary" id="exportBtn">Exportar JSON</button>
+              <label class="btn secondary-neutral" style="display:inline-flex;align-items:center;gap:8px">
                 <input id="importInput" type="file" accept="application/json" hidden>
                 Importar JSON
               </label>
-              <button class="btn" id="resetBtn">Borrar datos</button>
+              <button class="btn action-delete" id="resetBtn">Borrar datos</button>
             </div>
             <pre id="jsonPreview" style="white-space:pre-wrap;margin-top:14px;background:var(--surface2);padding:14px;border-radius:12px;border:1px solid var(--border)"></pre>
           </div>
@@ -216,7 +230,7 @@
               <h3 id="modalTitle">Detalle de obra</h3>
               <div class="muted" id="modalSub"></div>
             </div>
-            <button class="btn" id="closeModalBtn">Cerrar</button>
+            <button class="btn secondary-neutral" id="closeModalBtn">Cerrar</button>
           </div>
           <div id="modalBody" style="margin-top:14px"></div>
         </div>
@@ -317,11 +331,12 @@
       });
     }
     function renderNotes(){
-      $('#notesList').innerHTML=(state.notes||[]).map(n=>`<div class="item"><div class="row"><div><strong>${n.title}</strong><div class="muted">${n.body}</div></div><button class="btn" data-del-note="${n.id}">Borrar</button></div></div>`).join('') || '<div class="item">Sin notas</div>';
+      $('#notesList').innerHTML=(state.notes||[]).map(n=>`<div class="item"><div class="row"><div><strong>${n.title}</strong><div class="muted">${n.body}</div></div><button class="btn action-delete" data-del-note="${n.id}">Borrar</button></div></div>`).join('') || '<div class="item">Sin notas</div>';
     }
     function renderAlerts(){
-      $('#alertsList').innerHTML=(state.alerts||[]).map(a=>`<div class="item"><div class="row"><div><strong>${a.text}</strong><div class="muted">${a.date}</div></div><button class="btn" data-del-alert="${a.id}">Borrar</button></div></div>`).join('') || '<div class="item">Sin alertas</div>';
+      $('#alertsList').innerHTML=(state.alerts||[]).map(a=>`<div class="item"><div class="row"><div><strong>${a.text}</strong><div class="muted">${a.date}</div></div><button class="btn action-delete" data-del-alert="${a.id}">Borrar</button></div></div>`).join('') || '<div class="item">Sin alertas</div>';
     }
+    
     function openProjectModal(id){
       const p=state.projects.find(x=>x.id==id);
       if(!p) return;
@@ -331,6 +346,64 @@
       const pm=state.money.filter(m=>m.projectId==id);
       const pd=state.docs.filter(d=>d.projectId==id);
       $('#modalBody').innerHTML=`<div class="split"><div><h3 style="font-size:16px;margin-bottom:8px">Tareas</h3>${pt.map(t=>`<div class="item"><strong>${t.title}</strong><div class="meta"><span>${t.date}</span><span>${t.priority}</span></div></div>`).join('')||'<div class="item">Sin tareas</div>'}</div><div><h3 style="font-size:16px;margin-bottom:8px">Documentos</h3>${pd.map(d=>`<div class="item"><strong>${d.name}</strong><div class="meta"><span>${d.type}</span><span>${d.date}</span></div></div>`).join('')||'<div class="item">Sin documentos</div>'}</div></div><div style="margin-top:14px"><h3 style="font-size:16px;margin-bottom:8px">Economía</h3>${pm.map(m=>`<div class="item"><div class="row"><strong>${m.concept}</strong><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong></div></div>`).join('')||'<div class="item">Sin movimientos</div>'}</div>`;
+      $('#projectModal').style.display='flex';
+    }
+
+    function openEditProjectModal(id){
+      const p=state.projects.find(x=>x.id==id);
+      if(!p) return;
+      $('#modalTitle').textContent = "Editar Obra";
+      $('#modalSub').textContent = p.name;
+      
+      $('#modalBody').innerHTML = `
+        <form class="form" id="editProjectForm">
+          <input type="hidden" id="editProjId" value="${p.id}">
+          <div><label>Nombre de la Obra</label><input id="editProjName" value="${p.name}" required></div>
+          <div><label>Cliente</label><input id="editProjClient" value="${p.client}" required></div>
+          <div class="split">
+            <div>
+              <label>Fase</label>
+              <select id="editProjPhase">
+                <option ${p.phase==='Anteproyecto'?'selected':''}>Anteproyecto</option>
+                <option ${p.phase==='Proyecto básico'?'selected':''}>Proyecto básico</option>
+                <option ${p.phase==='Licencia'?'selected':''}>Licencia</option>
+                <option ${p.phase==='Ejecución'?'selected':''}>Ejecución</option>
+              </select>
+            </div>
+            <div>
+              <label>Estado</label>
+              <select id="editProjStatus">
+                <option ${p.status==='En plazo'?'selected':''}>En plazo</option>
+                <option ${p.status==='Bloqueado'?'selected':''}>Bloqueado</option>
+                <option ${p.status==='Urgente'?'selected':''}>Urgente</option>
+              </select>
+            </div>
+          </div>
+          <div class="split">
+            <div><label>Presupuesto (€)</label><input type="number" step="0.01" id="editProjBudget" value="${p.budget}"></div>
+            <div><label>Gastado (€)</label><input type="number" step="0.01" id="editProjSpent" value="${p.spent}"></div>
+          </div>
+          <div><label>Notas internas</label><textarea id="editProjNotes" rows="3">${p.notes}</textarea></div>
+          <div style="margin-top:14px; display:flex; gap:10px; justify-content:flex-end;">
+            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
+            <button type="submit" class="btn primary">Guardar Cambios</button>
+          </div>
+        </form>
+      `;
+      
+      $('#editProjectForm').onsubmit = e => {
+        e.preventDefault();
+        p.name = $('#editProjName').value.trim();
+        p.client = $('#editProjClient').value.trim();
+        p.phase = $('#editProjPhase').value;
+        p.status = $('#editProjStatus').value;
+        p.budget = Number($('#editProjBudget').value) || 0;
+        p.spent = Number($('#editProjSpent').value) || 0;
+        p.notes = $('#editProjNotes').value.trim();
+        $('#projectModal').style.display='none';
+        save();
+      };
+      
       $('#projectModal').style.display='flex';
     }
 
@@ -346,13 +419,13 @@
       ].map(([a,b])=>`<div class="item"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('');
 
       const projects=state.projects.filter(p=>`${p.name} ${p.client} ${p.phase} ${p.status} ${p.notes}`.toLowerCase().includes(q) && (phase==='Todos' || p.phase===phase));
-      $('#projectsList').innerHTML=projects.map(p=>`<div class="item"><div class="row"><div><strong>${p.name}</strong><div class="meta"><span>${p.client}</span><span>${p.phase}</span><span>${p.budget?fmt(p.budget):'Sin presupuesto'}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">${statusBadge(p.status)}<button class="btn" data-view-project="${p.id}">Ver</button><button class="btn" data-edit-project="${p.id}">Editar</button><button class="btn" data-del-project="${p.id}">Borrar</button></div></div><div class="muted">${p.notes}</div>${projectProgress(p)}</div>`).join('') || '<div class="item">Sin resultados</div>';
+      $('#projectsList').innerHTML=projects.map(p=>`<div class="item"><div class="row"><div><strong>${p.name}</strong><div class="meta"><span>${p.client}</span><span>${p.phase}</span><span>${p.budget?fmt(p.budget):'Sin presupuesto'}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">${statusBadge(p.status)}<button class="btn action-view" data-view-project="${p.id}">Ver</button><button class="btn action-edit" data-edit-project="${p.id}">Editar</button><button class="btn action-delete" data-del-project="${p.id}">Borrar</button></div></div><div class="muted">${p.notes}</div>${projectProgress(p)}</div>`).join('') || '<div class="item">Sin resultados</div>';
 
-      $('#tasksList').innerHTML=state.tasks.filter(t=>`${t.title} ${projectName(t.projectId)} ${t.priority}`.toLowerCase().includes(q)).map(t=>`<div class="item"><div class="row"><div><strong>${t.title}</strong><div class="meta"><span>${projectName(t.projectId)}</span><span>${t.date}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><span class="badge ${t.priority==='Urgente'?'bad':t.priority==='Alta'?'warn':'good'}">${t.priority}</span><button class="btn" data-edit-task="${t.id}">Editar</button><button class="btn" data-del-task="${t.id}">Borrar</button></div></div><label class="meta"><input class="check" type="checkbox" data-task-done="${t.id}" ${t.done?'checked':''}> Marcar como hecha</label></div>`).join('') || '<div class="item">Sin resultados</div>';
+      $('#tasksList').innerHTML=state.tasks.filter(t=>`${t.title} ${projectName(t.projectId)} ${t.priority}`.toLowerCase().includes(q)).map(t=>`<div class="item"><div class="row"><div><strong>${t.title}</strong><div class="meta"><span>${projectName(t.projectId)}</span><span>${t.date}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><span class="badge ${t.priority==='Urgente'?'bad':t.priority==='Alta'?'warn':'good'}">${t.priority}</span><button class="btn action-edit" data-edit-task="${t.id}">Editar</button><button class="btn action-delete" data-del-task="${t.id}">Borrar</button></div></div><label class="meta"><input class="check" type="checkbox" data-task-done="${t.id}" ${t.done?'checked':''}> Marcar como hecha</label></div>`).join('') || '<div class="item">Sin resultados</div>';
 
-      $('#moneyList').innerHTML=state.money.filter(m=>`${m.concept} ${projectName(m.projectId)} ${m.type}`.toLowerCase().includes(q)).map(m=>`<div class="item"><div class="row"><div><strong>${m.concept}</strong><div class="meta"><span>${projectName(m.projectId)}</span><span>${m.date}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong><button class="btn" data-edit-money="${m.id}">Editar</button><button class="btn" data-del-money="${m.id}">Borrar</button></div></div></div>`).join('') || '<div class="item">Sin resultados</div>';
+      $('#moneyList').innerHTML=state.money.filter(m=>`${m.concept} ${projectName(m.projectId)} ${m.type}`.toLowerCase().includes(q)).map(m=>`<div class="item"><div class="row"><div><strong>${m.concept}</strong><div class="meta"><span>${projectName(m.projectId)}</span><span>${m.date}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong><button class="btn" data-edit-money="${m.id}">Editar</button><button class="btn action-delete" data-del-money="${m.id}">Borrar</button></div></div></div>`).join('') || '<div class="item">Sin resultados</div>';
 
-      $('#docsList').innerHTML=state.docs.filter(d=>`${d.name} ${projectName(d.projectId)} ${d.type}`.toLowerCase().includes(q)).map(d=>`<div class="item"><div class="row"><div><strong>${d.name}</strong><div class="meta"><span>${projectName(d.projectId)}</span><span>${d.type}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><span class="badge info">Guardado</span><button class="btn" data-edit-doc="${d.id}">Editar</button><button class="btn" data-del-doc="${d.id}">Borrar</button></div></div></div>`).join('') || '<div class="item">Sin resultados</div>';
+      $('#docsList').innerHTML=state.docs.filter(d=>`${d.name} ${projectName(d.projectId)} ${d.type}`.toLowerCase().includes(q)).map(d=>`<div class="item"><div class="row"><div><strong>${d.name}</strong><div class="meta"><span>${projectName(d.projectId)}</span><span>${d.type}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><span class="badge info">Guardado</span><button class="btn action-edit" data-edit-doc="${d.id}">Editar</button><button class="btn" data-del-doc="${d.id}">Borrar</button></div></div></div>`).join('') || '<div class="item">Sin resultados</div>';
 
       renderOptions();
       renderNotes();
@@ -389,27 +462,7 @@
       if(d.delNote){ state.notes=(state.notes||[]).filter(x=>x.id!=d.delNote); save(); }
       if(d.delAlert){ state.alerts=(state.alerts||[]).filter(x=>x.id!=d.delAlert); save(); }
       if(d.viewProject){ openProjectModal(d.viewProject); }
-      if(d.editProject){
-        const p=state.projects.find(x=>x.id==d.editProject);
-        if(!p) return;
-        p.name=prompt('Nombre',p.name)||p.name;
-        p.client=prompt('Cliente',p.client)||p.client;
-        p.phase=prompt('Fase',p.phase)||p.phase;
-        p.status=prompt('Estado',p.status)||p.status;
-        p.notes=prompt('Notas',p.notes)||p.notes;
-        
-        const bPrompt = prompt('Presupuesto', p.budget);
-        if(bPrompt !== null && bPrompt.trim() !== "") {
-          const bVal = Number(bPrompt);
-          if(!isNaN(bVal)) p.budget = bVal;
-        }
-        const sPrompt = prompt('Gastado', p.spent);
-        if(sPrompt !== null && sPrompt.trim() !== "") {
-          const sVal = Number(sPrompt);
-          if(!isNaN(sVal)) p.spent = sVal;
-        }
-        save();
-      }
+      if(d.editProject){ openEditProjectModal(d.editProject); }
       if(d.editTask){
         const t=state.tasks.find(x=>x.id==d.editTask);
         if(!t) return;
@@ -488,7 +541,6 @@
       setSection('obras');
     }
 
-    $('#addProjectBtn').onclick=()=>{addProject();};
     $('#newProject2').onclick=()=>{addProject();};
 
     $('#themeBtn').onclick=()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'; toast('Tema cambiado');};
