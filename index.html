@@ -24,7 +24,7 @@
     .item{padding:14px;border-radius:14px;background:var(--surface2);border:1px solid rgba(0,0,0,.03);display:grid;gap:6px} .meta{display:flex;flex-wrap:wrap;gap:8px;color:var(--muted);font-size:13px}
     .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;width:max-content} .good{background:color-mix(in srgb, var(--good) 14%, transparent);color:var(--good)} .warn{background:color-mix(in srgb, var(--warn) 14%, transparent);color:var(--warn)} .bad{background:color-mix(in srgb, var(--bad) 14%, transparent);color:var(--bad)} .info{background:color-mix(in srgb, var(--info) 14%, transparent);color:var(--info)}
     .form{display:grid;gap:10px}.form label{font-size:13px;font-weight:700} .form input,.form select,.form textarea{width:100%;padding:12px 14px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:12px}
-    .list{display:grid;gap:10px}.toolbar{display:flex;gap:10px;flex-wrap:wrap}.section{display:none}.section.active{display:block}.mobile{display:none}.toplink{position:fixed;right:18px;bottom:18px;z-index:30;display:none}.toplink.show{display:block}
+    .list{display:grid;gap:10px}.toolbar{display:flex;gap:10px;flex-wrap:wrap}.section{display:none}.section.active{display:block}.mobile{display:none}
     .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px} .table th,.table td{text-align:left;padding:12px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top} .table th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
     .check{width:18px;height:18px;accent-color:var(--primary)}
@@ -207,7 +207,6 @@
         <button data-go="economia">€</button>
       </nav>
 
-      <button class="btn toplink" id="topBtn">↑ Arriba</button>
       <div class="toast" id="toast"></div>
 
       <div id="projectModal" style="position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;z-index:50;padding:18px">
@@ -359,7 +358,6 @@
       renderNotes();
       renderAlerts();
       $('#jsonPreview').textContent=JSON.stringify(state,null,2);
-      $('#topBtn').classList.toggle('show', window.scrollY > 300);
     }
 
     function setSection(id){
@@ -520,8 +518,6 @@
       }
     };
 
-    window.addEventListener('scroll',()=>$('#topBtn').classList.toggle('show', window.scrollY > 300));
-    $('#topBtn').onclick=()=>scrollTopSmooth();
     $('#closeModalBtn').onclick=()=>$('#projectModal').style.display='none';
     $('#projectModal').addEventListener('click',e=>{if(e.target.id==='projectModal') $('#projectModal').style.display='none';});
     $('#addNoteBtn')?.addEventListener('click',()=>{
