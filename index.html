@@ -41,7 +41,6 @@
     .toast.show{display:block}
     .footer-note{padding:0 22px 22px;color:var(--muted);font-size:13px}
     
-    /* Ventana modal blindada contra el arrastre del fondo trasero */
     #projectModal{position:fixed;inset:0;background:rgba(20,19,18,0.6);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:150;padding:20px;overscroll-behavior:contain}
     #projectModal .card{max-width:760px;width:100%;max-height:calc(100vh - 120px);overflow-y:auto;display:flex;flex-direction:column;gap:16px;overscroll-behavior:contain}
     
@@ -264,10 +263,11 @@
         {id:2,projectId:1,type:'Gasto',concept:'Industrial estructura',amount:5200,date:'2026-07-17'}
       ],
       docs:[
-        {id:1,projectId:3,name:'memoria-basica.pdf',type:'PDF',date:'2026-07-19'}
+        {id:1,projectId:3,name:'memoria-basica.pdf',type:'PDF',date:'2026-07-19'},
+        {id:2,projectId:1,name:'plano-distribucion.dwg',type:'DWG',date:'2026-07-18'}
       ],
       notes:[
-        {id:1,projectId:1,title:'Revisar mediciones',body:'Antes de cerrar el presupuesto',date:'2026-07-19'}
+        {id:1,projectId:1,title:'Revisar mediciones estructurales',body:'Antes de cerrar el presupuesto a finales de mes con el calculista.',date:'2026-07-19',docId:1}
       ],
       alerts:[
         {id:1,text:'Entregar documentación de Pozuelo',date:'2026-07-23'}
@@ -311,6 +311,9 @@
     }
     function projectName(id){
       return (state.projects.find(p=>p.id==id)||{}).name||'—'
+    }
+    function docName(id){
+      return (state.docs.find(d=>d.id==id)||{}).name||''
     }
     function statusBadge(s){
       const c=s==='En plazo'?'good':s==='Bloqueado'?'warn':'bad';
@@ -359,9 +362,25 @@
         if(el) el.innerHTML=options;
       });
     }
+    
+    /* Modificado: Añadido indicador visual sutil de documento adjunto en la lista compacta de notas */
     function renderNotes(){
-      $('#notesList').innerHTML=(state.notes||[]).map(n=>`<div class="item"><div class="row"><div><strong>${n.title}</strong><div class="muted">${n.body}</div></div><button class="btn action-delete" data-del-note="${n.id}">Borrar</button></div></div>`).join('') || '<div class="item">Sin notas</div>';
+      $('#notesList').innerHTML=(state.notes||[]).map(n=>{
+        const hasDoc = n.docId ? `<span class="badge info" style="padding: 2px 6px; font-size: 10px;">📎 Archivo</span>` : '';
+        return `
+          <div class="item">
+            <div class="row">
+              <div><strong>${n.title}</strong> ${hasDoc}</div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn action-view" data-view-note="${n.id}">Ver</button>
+                <button class="btn action-delete" data-del-note="${n.id}">Borrar</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('') || '<div class="item">Sin notas</div>';
     }
+    
     function renderAlerts(){
       $('#alertsList').innerHTML=(state.alerts||[]).map(a=>`<div class="item"><div class="row"><div><strong>${a.text}</strong><div class="muted">${a.date}</div></div><button class="btn action-delete" data-del-alert="${a.id}">Borrar</button></div></div>`).join('') || '<div class="item">Sin alertas</div>';
     }
@@ -397,6 +416,36 @@
       $('#projectModal').style.display='flex';
     }
 
+    /* Modificado: El modal expandido lee e inyecta la referencia al documento vinculado si existiese */
+    function openNoteViewModal(id){
+      const n = (state.notes||[]).find(x=>x.id==id);
+      if(!n) return;
+      $('#modalTitle').textContent = n.title;
+      $('#modalSub').textContent = `Creada el ${n.date || '—'}`;
+      
+      let docHtml = '';
+      if(n.docId) {
+        const d = state.docs.find(x => x.id == n.docId);
+        if(d) {
+          docHtml = `
+            <div style="margin-top: 14px;">
+              <h3 style="font-size:14px; margin-bottom:6px;">Documento de Referencia Vinculado:</h3>
+              <div class="badge info" style="font-size:13px; padding: 6px 12px; border-radius: 8px;">📎 ${d.name} (${d.type})</div>
+            </div>
+          `;
+        }
+      }
+
+      $('#modalBody').innerHTML = `
+        <div class="item" style="background:var(--surface2); padding:16px; white-space:pre-wrap; font-size:15px; border:1px solid var(--border)">${n.body || '<span class="muted">Esta nota no contiene descripción de texto.</span>'}</div>
+        ${docHtml}
+        <div class="card-actions-centered" style="border:none; margin-top:14px;">
+          <button type="button" class="btn primary" onclick="$('#projectModal').style.display='none'">Entendido</button>
+        </div>
+      `;
+      $('#projectModal').style.display='flex';
+    }
+
     function openAddProjectModal(){
       $('#modalTitle').textContent = "Nueva Obra";
       $('#modalSub').textContent = "Alta de proyecto en el estudio";
@@ -423,13 +472,18 @@
       $('#projectModal').style.display='flex';
     }
 
+    /* Modificado: Formulario estructurado para Notas incluye selector dinámico para añadir un Documento de referencia */
     function openAddNoteModal(){
       $('#modalTitle').textContent = "Nueva Nota Rápida";
       $('#modalSub').textContent = "Anotación interna temporal";
+      
+      const docOpts = `<option value="">-- Ninguno --</option>` + state.docs.map(d => `<option value="${d.id}">${d.name} (${d.type})</option>`).join('');
+
       $('#modalBody').innerHTML = `
         <form class="form" id="addNoteForm">
           <div><label>Título de la nota</label><input id="newNoteTitle" required placeholder="Ej. Revisar mediciones estructurales"></div>
-          <div><label>Contenido / Detalles</label><textarea id="newNoteBody" rows="3" placeholder="Añade anotaciones adicionales..."></textarea></div>
+          <div><label>Vincular Documento de Referencia (Opcional)</label><select id="newNoteDoc">${docOpts}</select></div>
+          <div><label>Contenido / Detalles</label><textarea id="newNoteBody" rows="4" placeholder="Añade anotaciones adicionales..."></textarea></div>
           <div class="card-actions-centered" style="border:none; margin-top:14px;">
             <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
             <button type="submit" class="btn primary">Guardar Nota</button>
@@ -440,8 +494,9 @@
         e.preventDefault();
         const title = $('#newNoteTitle').value.trim();
         const body = $('#newNoteBody').value.trim();
+        const docId = $('#newNoteDoc').value ? +$('#newNoteDoc').value : null;
         if(!state.notes) state.notes = [];
-        state.notes.unshift({id:Date.now(),title,body,date:getLocalDateString()});
+        state.notes.unshift({id:Date.now(),title,body,date:getLocalDateString(),docId});
         $('#projectModal').style.display='none';
         save();
       });
@@ -760,9 +815,10 @@
       if(d.delTask){ if(confirm('¿Borrar tarea?')){ state.tasks=state.tasks.filter(x=>x.id!=d.delTask); save(); } }
       if(d.delMoney){ if(confirm('¿Borrar movimiento?')){ state.money=state.money.filter(x=>x.id!=d.delMoney); save(); } }
       if(d.delDoc){ if(confirm('¿Borrar documento?')){ state.docs=state.docs.filter(x=>x.id!=d.delDoc); save(); } }
-      if(d.delNote){ state.notes=(state.notes||[]).filter(x=>x.id!=d.delNote); save(); }
-      if(d.delAlert){ state.alerts=(state.alerts||[]).filter(x=>x.id!=d.delAlert); save(); }
+      if(d.delNote){ if(confirm('¿Borrar nota rápida?')){ state.notes=(state.notes||[]).filter(x=>x.id!=d.delNote); save(); } }
+      if(d.delAlert){ if(confirm('¿Borrar alerta de vencimiento?')){ state.alerts=(state.alerts||[]).filter(x=>x.id!=d.delAlert); save(); } }
       if(d.viewProject){ openProjectModal(d.viewProject); }
+      if(d.viewNote){ openNoteViewModal(d.viewNote); }
       if(d.editProject){ openEditProjectModal(d.editProject); }
       if(d.editTask){ openEditTaskModal(d.editTask); }
       if(d.editMoney){ openEditMoneyModal(d.editMoney); }
