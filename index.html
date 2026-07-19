@@ -252,7 +252,7 @@
       projects:[
         {id:1,name:'Rehabilitación Chamberí',client:'Inversora Luma',phase:'Ejecución',status:'En plazo',budget:120000,spent:76000,notes:'Visita de obra completada.'},
         {id:2,name:'Local comercial Salamanca',client:'Benta Studio',phase:'Licencia',status:'Bloqueado',budget:45000,spent:9000,notes:'Falta respuesta municipal.'},
-        {id:3,name:'Vivienda unifamiliar Pozuelo',client:'Familia R.',phase:'Proyecto básico',status:'Urgente',budget:98000,spent:22000,notes:'Cerrar memoria y plano de installations.'}
+        {id:3,name:'Vivienda unifamiliar Pozuelo',client:'Familia R.',phase:'Proyecto básico',status:'Urgente',budget:98000,spent:22000,notes:'Cerrar memoria y plano de instalaciones.'}
       ],
       tasks:[
         {id:1,projectId:1,title:'Subir acta de visita',date:'2026-07-19',priority:'Alta',done:false},
@@ -387,8 +387,10 @@
     function openProjectModal(id){
       const p=state.projects.find(x=>x.id==id);
       if(!p) return;
-      $('#modalTitle').textContent=p.name;
-      $('#modalSub').textContent=p.client+' · '+p.phase;
+      
+      /* Corregido: Se ha restaurado el botón sutil de cierre de cabecera en las vistas exclusivas de lectura detallada */
+      $('.row', '#projectModal').innerHTML = `<div><h3>Detalle de obra</h3><div class="muted" id="modalSub">${p.name}</div></div><button class="btn secondary-neutral" id="closeModalBtn" onclick="$('#projectModal').style.display='none'">Cerrar</button>`;
+      
       const pt=state.tasks.filter(t=>t.projectId==id);
       const pm=state.money.filter(m=>m.projectId==id);
       const pd=state.docs.filter(d=>d.projectId==id);
@@ -418,8 +420,9 @@
     function openNoteViewModal(id){
       const n = (state.notes||[]).find(x=>x.id==id);
       if(!n) return;
-      $('#modalTitle').textContent = n.title;
-      $('#modalSub').textContent = `Creada el ${n.date || '—'}`;
+      
+      /* Corregido: Se ha restaurado el botón de cierre en la lectura de la nota rápida */
+      $('.row', '#projectModal').innerHTML = `<div><h3>${n.title}</h3><div class="muted" id="modalSub">Creada el ${n.date || '—'}</div></div><button class="btn secondary-neutral" id="closeModalBtn" onclick="$('#projectModal').style.display='none'">Cerrar</button>`;
       
       let docHtml = '';
       if(n.docId) {
@@ -444,14 +447,14 @@
       $('#projectModal').style.display='flex';
     }
 
+    /* Corregido: Eliminados botones redundantes de aspa en las vistas que ya contienen botoneras de 'Cancelar' e inyección limpia */
     function openAddProjectModal(){
-      $('#modalTitle').textContent = "Nueva Obra";
-      $('#modalSub').textContent = "Alta de proyecto en el estudio";
+      $('.row', '#projectModal').innerHTML = `<div><h3>Nueva Obra</h3><div class="muted">Alta de proyecto en el estudio</div></div>`;
       $('#modalBody').innerHTML = `
         <form class="form" id="addProjectForm">
           <div><label>Nombre de la Obra</label><input id="newProjName" required placeholder="Ej. Vivienda Unifamiliar Pozuelo"></div>
           <div><label>Cliente</label><input id="newProjClient" required placeholder="Ej. Familia R."></div>
-          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+          <div class="card-actions-centered" style="margin-top:14px;">
             <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
             <button type="submit" class="btn primary">Crear Obra</button>
           </div>
@@ -470,11 +473,8 @@
       $('#projectModal').style.display='flex';
     }
 
-    /* Corregido: Removido el botón duplicado 'Cerrar' de la cabecera en el alta de Notas Rápidas */
     function openAddNoteModal(){
-      $('#modalTitle').textContent = "Nueva Nota Rápida";
-      $('#modalSub').textContent = "Anotación interna temporal";
-      
+      $('.row', '#projectModal').innerHTML = `<div><h3>Nueva Nota Rápida</h3><div class="muted">Anotación interna temporal</div></div>`;
       const docOpts = `<option value="">-- Ninguno --</option>` + state.docs.map(d => `<option value="${d.id}">${d.name} (${d.type})</option>`).join('');
 
       $('#modalBody').innerHTML = `
@@ -482,7 +482,7 @@
           <div><label>Título de la nota</label><input id="newNoteTitle" required placeholder="Ej. Revisar mediciones estructurales"></div>
           <div><label>Vincular Documento de Referencia (Opcional)</label><select id="newNoteDoc">${docOpts}</select></div>
           <div><label>Contenido / Detalles</label><textarea id="newNoteBody" rows="4" placeholder="Añade anotaciones adicionales..."></textarea></div>
-          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+          <div class="card-actions-centered" style="margin-top:14px;">
             <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
             <button type="submit" class="btn primary">Guardar Nota</button>
           </div>
@@ -502,13 +502,12 @@
     }
 
     function openAddAlertModal(){
-      $('#modalTitle').textContent = "Nueva Alerta";
-      $('#modalSub').textContent = "Recordatorio de vencimiento crítico";
+      $('.row', '#projectModal').innerHTML = `<div><h3>Nueva Alerta</h3><div class="muted">Recordatorio de vencimiento crítico</div></div>`;
       $('#modalBody').innerHTML = `
         <form class="form" id="addAlertForm">
           <div><label>Concepto de la Alerta</label><input id="newAlertText" required placeholder="Ej. Entregar visado en el ayuntamiento"></div>
           <div><label>Fecha límite</label><input type="date" id="newAlertDate" value="${getLocalDateString()}" required></div>
-          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+          <div class="card-actions-centered" style="margin-top:14px;">
             <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
             <button type="submit" class="btn primary">Guardar Alerta</button>
           </div>
@@ -529,8 +528,7 @@
     function openEditProjectModal(id){
       const p=state.projects.find(x=>x.id==id);
       if(!p) return;
-      $('#modalTitle').textContent = "Editar Obra";
-      $('#modalSub').textContent = p.name;
+      $('.row', '#projectModal').innerHTML = `<div><h3>Editar Obra</h3><div class="muted">${p.name}</div></div>`;
       
       $('#modalBody').innerHTML = `
         <form class="form" id="editProjectForm">
@@ -560,7 +558,7 @@
             <div><label>Gastado sopesado (€)</label><input type="number" step="0.01" id="editProjSpent" value="${p.spent}" disabled style="opacity:0.6; cursor:not-allowed"></div>
           </div>
           <div><label>Notas internas</label><textarea id="editProjNotes" rows="3">${p.notes}</textarea></div>
-          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+          <div class="card-actions-centered" style="margin-top:14px;">
             <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
             <button type="submit" class="btn primary">Guardar Cambios</button>
           </div>
@@ -584,8 +582,7 @@
     function openEditTaskModal(id){
       const t=state.tasks.find(x=>x.id==id);
       if(!t) return;
-      $('#modalTitle').textContent = "Editar Tarea";
-      $('#modalSub').textContent = t.title;
+      $('.row', '#projectModal').innerHTML = `<div><h3>Editar Tarea</h3><div class="muted">${t.title}</div></div>`;
 
       const opts = state.projects.map(p=>`<option value="${p.id}" ${p.id==t.projectId?'selected':''}>${p.name}</option>`).join('');
 
@@ -604,7 +601,7 @@
               </select>
             </div>
           </div>
-          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+          <div class="card-actions-centered" style="margin-top:14px;">
             <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
             <button type="submit" class="btn primary">Guardar Tarea</button>
           </div>
@@ -626,8 +623,7 @@
     function openEditMoneyModal(id){
       const m=state.money.find(x=>x.id==id);
       if(!m) return;
-      $('#modalTitle').textContent = "Editar Movimiento Financiero";
-      $('#modalSub').textContent = m.concept;
+      $('.row', '#projectModal').innerHTML = `<div><h3>Editar Movimiento Financiero</h3><div class="muted">${m.concept}</div></div>`;
 
       const opts = state.projects.map(p=>`<option value="${p.id}" ${p.id==m.projectId?'selected':''}>${p.name}</option>`).join('');
 
@@ -646,7 +642,7 @@
             <div><label>Importe Total (€)</label><input type="number" step="0.01" id="editMoneyAmount" value="${m.amount}" required></div>
           </div>
           <div><label>Concepto descriptivo</label><input id="editMoneyConcept" value="${m.concept}" required></div>
-          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+          <div class="card-actions-centered" style="margin-top:14px;">
             <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
             <button type="submit" class="btn primary">Guardar Registro</button>
           </div>
@@ -669,8 +665,7 @@
     function openEditDocModal(id){
       const doc=state.docs.find(x=>x.id==id);
       if(!doc) return;
-      $('#modalTitle').textContent = "Editar Referencia de Documento";
-      $('#modalSub').textContent = doc.name;
+      $('.row', '#projectModal').innerHTML = `<div><h3>Editar Referencia de Documento</h3><div class="muted">${doc.name}</div></div>`;
 
       const opts = state.projects.map(p=>`<option value="${p.id}" ${p.id==doc.projectId?'selected':''}>${p.name}</option>`).join('');
 
@@ -690,7 +685,7 @@
               </select>
             </div>
           </div>
-          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+          <div class="card-actions-centered" style="margin-top:14px;">
             <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
             <button type="submit" class="btn primary">Actualizar Datos</button>
           </div>
@@ -892,7 +887,7 @@
       }
     };
 
-    $('#closeModalBtn').onclick=()=>$('#projectModal').style.display='none';
+    /* El disparador global fuera de las tarjetas cierra el modal independientemente de la vista inyectada */
     $('#projectModal').addEventListener('click',e=>{if(e.target.id==='projectModal') $('#projectModal').style.display='none';});
 
     syncProjectExpenses();
