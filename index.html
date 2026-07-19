@@ -44,7 +44,8 @@
     #projectModal{position:fixed;inset:0;background:rgba(31,29,24,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:150;padding:20px}
     #projectModal .card{max-width:760px;width:100%;max-height:calc(100vh - 120px);overflow-y:auto;display:flex;flex-direction:column;gap:16px}
     
-    /* Contenedor unificado para centrado horizontal de botoneras inferiores */
+    #projectModal input, #projectModal select, #projectModal textarea {color:var(--text); background:var(--surface2)}
+    
     .card-actions-centered{display:flex;gap:12px;margin-top:12px;border-top:1px solid var(--border);padding-top:10px;justify-content:center;flex-wrap:wrap}
 
     @media (max-width:1000px){
@@ -283,11 +284,24 @@
         return JSON.parse(JSON.stringify(seed));
       }
     }
+    
+    /* Sincronización en tiempo real: recalculamos los gastos acumulados de las obras en base al histórico */
+    function syncProjectExpenses() {
+      state.projects.forEach(p => {
+        p.spent = state.money
+          .filter(m => m.projectId == p.id && m.type === 'Gasto')
+          .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+      });
+    }
+
     function save(){
+      syncProjectExpenses();
       localStorage.setItem(KEY, JSON.stringify(state));
+      renderOptions();
       render();
       toast('Guardado');
     }
+    
     function toast(msg){
       const t=$('#toast');
       t.textContent=msg;
@@ -305,20 +319,28 @@
     function scrollTopSmooth(){
       window.scrollTo({top:0,behavior:'smooth'})
     }
+    function getLocalDateString() {
+      const d = new Date();
+      const offset = d.getTimezoneOffset();
+      const local = new Date(d.getTime() - (offset * 60 * 1000));
+      return local.toISOString().slice(0, 10);
+    }
     function projectProgress(p){
-      const pct=Math.max(0,Math.min(100,p.budget ? Math.round((p.spent/p.budget)*100) : 0));
-      return `<div style="margin-top:8px;height:10px;background:var(--surface2);border-radius:999px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--primary)"></div></div><div class="meta" style="margin-bottom:4px"><span>${pct}% ejecutado</span><span>${fmt(p.spent)} / ${fmt(p.budget)}</span></div>`
+      const budget = Number(p.budget) || 0;
+      const spent = Number(p.spent) || 0;
+      const pct=Math.max(0,Math.min(100,budget ? Math.round((spent/budget)*100) : 0));
+      return `<div style="margin-top:8px;height:10px;background:var(--surface2);border-radius:999px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--primary)"></div></div><div class="meta" style="margin-bottom:4px"><span>${pct}% ejecutado</span><span>${fmt(spent)} / ${fmt(budget)}</span></div>`
     }
     function calc(){
-      const income=state.money.filter(m=>m.type==='Ingreso').reduce((a,b)=>a+b.amount,0);
-      const expense=state.money.filter(m=>m.type==='Gasto').reduce((a,b)=>a+b.amount,0);
+      const income=state.money.filter(m=>m.type==='Ingreso').reduce((a,b)=>a+(Number(b.amount)||0),0);
+      const expense=state.money.filter(m=>m.type==='Gasto').reduce((a,b)=>a+(Number(b.amount)||0),0);
       return {
         income,
         expense,
         margin:income-expense,
         openTasks:state.tasks.filter(t=>!t.done).length,
         urgent:state.projects.filter(p=>p.status==='Urgente').length,
-        overBudget:state.projects.filter(p=>p.budget&&p.spent>p.budget).length
+        overBudget:state.projects.filter(p=>Number(p.budget)>0 && (Number(p.spent)||0)>Number(p.budget)).length
       }
     }
     function updateKpis(){
@@ -352,7 +374,26 @@
       const pt=state.tasks.filter(t=>t.projectId==id);
       const pm=state.money.filter(m=>m.projectId==id);
       const pd=state.docs.filter(d=>d.projectId==id);
-      $('#modalBody').innerHTML=`<div class="split"><div><h3 style="font-size:16px;margin-bottom:8px">Tareas</h3>${pt.map(t=>`<div class="item"><strong>${t.title}</strong><div class="meta"><span>${t.date}</span><span>${t.priority}</span></div></div>`).join('')||'<div class="item">Sin tareas</div>'}</div><div><h3 style="font-size:16px;margin-bottom:8px">Documentos</h3>${pd.map(d=>`<div class="item"><strong>${d.name}</strong><div class="meta"><span>${d.type}</span><span>${d.date}</span></div></div>`).join('')||'<div class="item">Sin documentos</div>'}</div></div><div style="margin-top:14px"><h3 style="font-size:16px;margin-bottom:8px">Economía</h3>${pm.map(m=>`<div class="item"><div class="row"><strong>${m.concept}</strong><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong></div></div>`).join('')||'<div class="item">Sin movimientos</div>'}</div>`;
+      
+      $('#modalBody').innerHTML = `
+        <div class="split">
+          <div>
+            <h3 style="font-size:16px;margin-bottom:8px">Tareas</h3>
+            ${pt.map(t=>{
+              const cls=t.priority==='Urgente'?'bad':t.priority==='Alta'?'warn':'good';
+              return `<div class="item"><strong>${t.title}</strong><div class="meta"><span>${t.date}</span><span class="badge ${cls}">${t.priority}</span></div></div>`;
+            }).join('')||'<div class="item">Sin tareas</div>'}
+          </div>
+          <div>
+            <h3 style="font-size:16px;margin-bottom:8px">Documentos</h3>
+            ${pd.map(d=>`<div class="item"><strong>${d.name}</strong><div class="meta"><span>${d.type}</span><span>${d.date}</span></div></div>`).join('')||'<div class="item">Sin documentos</div>'}
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <h3 style="font-size:16px;margin-bottom:8px">Economía</h3>
+          ${pm.map(m=>`<div class="item"><div class="row"><strong>${m.concept}</strong><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong></div></div>`).join('')||'<div class="item">Sin movimientos</div>'}
+        </div>
+      `;
       $('#projectModal').style.display='flex';
     }
 
@@ -387,7 +428,7 @@
           </div>
           <div class="split">
             <div><label>Presupuesto (€)</label><input type="number" step="0.01" id="editProjBudget" value="${p.budget}"></div>
-            <div><label>Gastado (€)</label><input type="number" step="0.01" id="editProjSpent" value="${p.spent}"></div>
+            <div><label>Gastado sopesado (€)</label><input type="number" step="0.01" id="editProjSpent" value="${p.spent}" disabled style="opacity:0.6; cursor:not-allowed"></div>
           </div>
           <div><label>Notas internas</label><textarea id="editProjNotes" rows="3">${p.notes}</textarea></div>
           <div class="card-actions-centered" style="border:none; margin-top:14px;">
@@ -397,18 +438,17 @@
         </form>
       `;
       
-      $('#editProjectForm').onsubmit = e => {
+      $('#editProjectForm').addEventListener('submit', e => {
         e.preventDefault();
         p.name = $('#editProjName').value.trim();
         p.client = $('#editProjClient').value.trim();
         p.phase = $('#editProjPhase').value;
         p.status = $('#editProjStatus').value;
-        p.budget = Number($('#editProjBudget').value) || 0;
-        p.spent = Number($('#editProjSpent').value) || 0;
+        p.budget = $('#editProjBudget').value !== "" ? (Number($('#editProjBudget').value) || 0) : p.budget;
         p.notes = $('#editProjNotes').value.trim();
         $('#projectModal').style.display='none';
         save();
-      };
+      });
       $('#projectModal').style.display='flex';
     }
 
@@ -442,7 +482,7 @@
         </form>
       `;
 
-      $('#editTaskForm').onsubmit = e => {
+      $('#editTaskForm').addEventListener('submit', e => {
         e.preventDefault();
         t.projectId = +$('#editTaskProj').value;
         t.title = $('#editTaskTitle').value.trim();
@@ -450,7 +490,7 @@
         t.priority = $('#editTaskPriority').value;
         $('#projectModal').style.display='none';
         save();
-      };
+      });
       $('#projectModal').style.display='flex';
     }
 
@@ -464,6 +504,7 @@
 
       $('#modalBody').innerHTML = `
         <form class="form" id="editMoneyForm">
+          <input type="hidden" id="editMoneyDate" value="${m.date || getLocalDateString()}">
           <div><label>Obra Vinculada</label><select id="editMoneyProj">${opts}</select></div>
           <div class="split">
             <div>
@@ -483,15 +524,16 @@
         </form>
       `;
 
-      $('#editMoneyForm').onsubmit = e => {
+      $('#editMoneyForm').addEventListener('submit', e => {
         e.preventDefault();
         m.projectId = +$('#editMoneyProj').value;
         m.type = $('#editMoneyType').value;
         m.amount = Number($('#editMoneyAmount').value) || 0;
         m.concept = $('#editMoneyConcept').value.trim();
+        m.date = $('#editMoneyDate').value;
         $('#projectModal').style.display='none';
         save();
-      };
+      });
       $('#projectModal').style.display='flex';
     }
 
@@ -505,6 +547,7 @@
 
       $('#modalBody').innerHTML = `
         <form class="form" id="editDocForm">
+          <input type="hidden" id="editDocDate" value="${doc.date || getLocalDateString()}">
           <div><label>Obra Relacionada</label><select id="editDocProj">${opts}</select></div>
           <div class="split">
             <div><label>Nombre del Archivo</label><input id="editDocName" value="${doc.name}" required></div>
@@ -525,14 +568,15 @@
         </form>
       `;
 
-      $('#editDocForm').onsubmit = e => {
+      $('#editDocForm').addEventListener('submit', e => {
         e.preventDefault();
         doc.projectId = +$('#editDocProj').value;
         doc.name = $('#editDocName').value.trim();
         doc.type = $('#editDocType').value;
+        doc.date = $('#editDocDate').value;
         $('#projectModal').style.display='none';
         save();
-      };
+      });
       $('#projectModal').style.display='flex';
     }
 
@@ -541,11 +585,13 @@
       const phase=($('#phaseFilter')?.value||'Todos');
       $('#kpis').innerHTML=updateKpis();
       const k=calc();
+      
+      /* Corregido: Limpieza total de cadenas de texto huérfanas en las métricas */
       $('#todayStats').innerHTML=[
-        ['Visitas',state.tasks.filter(t=>t.date==='2026-07-19').length],
+        ['Visitas',state.tasks.filter(t=>t.date===getLocalDateString()).length],
         ['Obras críticas',k.urgent],
         ['Alertas',state.alerts.length]
-      ].map(([a,b])=>`<div class="item"><div class="muted">${a}</div>exportBtn<strong>${b}</strong></div>`).join('');
+      ].map(([a,b])=>`<div class="item"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('');
 
       const projects=state.projects.filter(p=>`${p.name} ${p.client} ${p.phase} ${p.status} ${p.notes}`.toLowerCase().includes(q) && (phase==='Todos' || p.phase===phase));
       $('#projectsList').innerHTML=projects.map(p=>`
@@ -668,7 +714,7 @@
       e.preventDefault();
       const pId = +$('#moneyProject').value;
       if(!pId) return toast('Crea primero una obra');
-      state.money.unshift({id:Date.now(),projectId:pId,type:$('#moneyType').value,concept:$('#moneyConcept').value,amount:+$('#moneyAmount').value,date:new Date().toISOString().slice(0,10)});
+      state.money.unshift({id:Date.now(),projectId:pId,type:$('#moneyType').value,concept:$('#moneyConcept').value,amount:+$('#moneyAmount').value,date:getLocalDateString()});
       e.target.reset();
       if($('#searchInput')) $('#searchInput').value = '';
       save();
@@ -679,7 +725,7 @@
       e.preventDefault();
       const pId = +$('#docProject').value;
       if(!pId) return toast('Crea primero una obra');
-      state.docs.unshift({id:Date.now(),projectId:pId,name:$('#docName').value,type:$('#docType').value,date:new Date().toISOString().slice(0,10)});
+      state.docs.unshift({id:Date.now(),projectId:pId,name:$('#docName').value,type:$('#docType').value,date:getLocalDateString()});
       e.target.reset();
       if($('#searchInput')) $('#searchInput').value = '';
       save();
@@ -730,21 +776,23 @@
     $('#projectModal').addEventListener('click',e=>{if(e.target.id==='projectModal') $('#projectModal').style.display='none';});
     $('#addNoteBtn')?.addEventListener('click',()=>{
       const title=prompt('Título');
-      if(!title) return;
+      if(!title || !title.trim()) return;
       const body=prompt('Contenido')||'';
       if(!state.notes) state.notes = [];
-      state.notes.unshift({id:Date.now(),title,body,date:new Date().toISOString().slice(0,10)});
+      state.notes.unshift({id:Date.now(),title:title.trim(),body:body.trim(),date:getLocalDateString()});
       save();
     });
     $('#addAlertBtn')?.addEventListener('click',()=>{
       const text=prompt('Alerta');
-      if(!text) return;
-      const date=prompt('Fecha YYYY-MM-DD',new Date().toISOString().slice(0,10))||new Date().toISOString().slice(0,10);
+      if(!text || !text.trim()) return;
+      const date=prompt('Fecha YYYY-MM-DD',getLocalDateString())||getLocalDateString();
       if(!state.alerts) state.alerts = [];
-      state.alerts.unshift({id:Date.now(),text,date});
+      state.alerts.unshift({id:Date.now(),text:text.trim(),date});
       save();
     });
 
+    /* Inicialización inicial sopesada del histórico */
+    syncProjectExpenses();
     render();
   </script>
 </body>
