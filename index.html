@@ -41,7 +41,6 @@
     .toast.show{display:block}
     .footer-note{padding:0 22px 22px;color:var(--muted);font-size:13px}
     
-    /* Ventana modal optimizada con scroll interno adaptativo */
     #projectModal{position:fixed;inset:0;background:rgba(31,29,24,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:150;padding:20px}
     #projectModal .card{max-width:760px;width:100%;max-height:calc(100vh - 120px);overflow-y:auto;display:flex;flex-direction:column;gap:16px}
     
@@ -305,7 +304,7 @@
     }
     function projectProgress(p){
       const pct=Math.max(0,Math.min(100,p.budget ? Math.round((p.spent/p.budget)*100) : 0));
-      return `<div style="margin-top:8px;height:10px;background:var(--surface2);border-radius:999px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--primary)"></div></div><div class="meta"><span>${pct}% ejecutado</span><span>${fmt(p.spent)} / ${fmt(p.budget)}</span></div>`
+      return `<div style="margin-top:8px;height:10px;background:var(--surface2);border-radius:999px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--primary)"></div></div><div class="meta" style="margin-bottom:4px"><span>${pct}% ejecutado</span><span>${fmt(p.spent)} / ${fmt(p.budget)}</span></div>`
     }
     function calc(){
       const income=state.money.filter(m=>m.type==='Ingreso').reduce((a,b)=>a+b.amount,0);
@@ -424,7 +423,30 @@
       ].map(([a,b])=>`<div class="item"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('');
 
       const projects=state.projects.filter(p=>`${p.name} ${p.client} ${p.phase} ${p.status} ${p.notes}`.toLowerCase().includes(q) && (phase==='Todos' || p.phase===phase));
-      $('#projectsList').innerHTML=projects.map(p=>`<div class="item"><div class="row"><div><strong>${p.name}</strong><div class="meta"><span>${p.client}</span><span>${p.phase}</span><span>${p.budget?fmt(p.budget):'Sin presupuesto'}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">${statusBadge(p.status)}<button class="btn action-view" data-view-project="${p.id}">Ver</button><button class="btn action-edit" data-edit-project="${p.id}">Editar</button><button class="btn action-delete" data-del-project="${p.id}">Borrar</button></div></div><div class="muted">${p.notes}</div>${projectProgress(p)}</div>`).join('') || '<div class="item">Sin resultados</div>';
+      
+      /* Renderizado modificado: bloque de botones movido a la parte inferior de la tarjeta */
+      $('#projectsList').innerHTML=projects.map(p=>`
+        <div class="item">
+          <div class="row">
+            <div>
+              <strong>${p.name}</strong>
+              <div class="meta">
+                <span>${p.client}</span>
+                <span>${p.phase}</span>
+                <span>${p.budget?fmt(p.budget):'Sin presupuesto'}</span>
+              </div>
+            </div>
+            <div>${statusBadge(p.status)}</div>
+          </div>
+          <div class="muted" style="margin-top:4px">${p.notes}</div>
+          ${projectProgress(p)}
+          <div style="display:flex; gap:8px; margin-top:12px; border-top:1px solid var(--border); padding-top:10px; justify-content:flex-end;">
+            <button class="btn action-view" data-view-project="${p.id}">Ver</button>
+            <button class="btn action-edit" data-edit-project="${p.id}">Editar</button>
+            <button class="btn action-delete" data-del-project="${p.id}">Borrar</button>
+          </div>
+        </div>
+      `).join('') || '<div class="item">Sin resultados</div>';
 
       $('#tasksList').innerHTML=state.tasks.filter(t=>`${t.title} ${projectName(t.projectId)} ${t.priority}`.toLowerCase().includes(q)).map(t=>`<div class="item"><div class="row"><div><strong>${t.title}</strong><div class="meta"><span>${projectName(t.projectId)}</span><span>${t.date}</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><span class="badge ${t.priority==='Urgente'?'bad':t.priority==='Alta'?'warn':'good'}">${t.priority}</span><button class="btn action-edit" data-edit-task="${t.id}">Editar</button><button class="btn action-delete" data-del-task="${t.id}">Borrar</button></div></div><label class="meta"><input class="check" type="checkbox" data-task-done="${t.id}" ${t.done?'checked':''}> Marcar como hecha</label></div>`).join('') || '<div class="item">Sin resultados</div>';
 
