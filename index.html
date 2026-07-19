@@ -41,8 +41,9 @@
     .toast.show{display:block}
     .footer-note{padding:0 22px 22px;color:var(--muted);font-size:13px}
     
-    #projectModal{position:fixed;inset:0;background:rgba(31,29,24,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:150;padding:20px}
-    #projectModal .card{max-width:760px;width:100%;max-height:calc(100vh - 120px);overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+    /* Ventana modal blindada contra el arrastre del fondo trasero */
+    #projectModal{position:fixed;inset:0;background:rgba(20,19,18,0.6);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:150;padding:20px;overscroll-behavior:contain}
+    #projectModal .card{max-width:760px;width:100%;max-height:calc(100vh - 120px);overflow-y:auto;display:flex;flex-direction:column;gap:16px;overscroll-behavior:contain}
     
     #projectModal input, #projectModal select, #projectModal textarea {color:var(--text); background:var(--surface2)}
     
@@ -396,7 +397,6 @@
       $('#projectModal').style.display='flex';
     }
 
-    /* Migración a formularios modal para altas (Obras, Notas y Alertas) */
     function openAddProjectModal(){
       $('#modalTitle').textContent = "Nueva Obra";
       $('#modalSub').textContent = "Alta de proyecto en el estudio";
@@ -807,7 +807,6 @@
       setSection('documentos');
     };
 
-    /* Vinculación de los gatillos de alta a los nuevos modales limpios */
     $('#newProject2').onclick=()=>{openAddProjectModal();};
     $('#addNoteBtn')?.addEventListener('click', () => { openAddNoteModal(); });
     $('#addAlertBtn')?.addEventListener('click', () => { openAddAlertModal(); });
