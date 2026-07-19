@@ -285,7 +285,6 @@
       }
     }
     
-    /* Sincronización en tiempo real: recalculamos los gastos acumulados de las obras en base al histórico */
     function syncProjectExpenses() {
       state.projects.forEach(p => {
         p.spent = state.money
@@ -394,6 +393,83 @@
           ${pm.map(m=>`<div class="item"><div class="row"><strong>${m.concept}</strong><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong></div></div>`).join('')||'<div class="item">Sin movimientos</div>'}
         </div>
       `;
+      $('#projectModal').style.display='flex';
+    }
+
+    /* Migración a formularios modal para altas (Obras, Notas y Alertas) */
+    function openAddProjectModal(){
+      $('#modalTitle').textContent = "Nueva Obra";
+      $('#modalSub').textContent = "Alta de proyecto en el estudio";
+      $('#modalBody').innerHTML = `
+        <form class="form" id="addProjectForm">
+          <div><label>Nombre de la Obra</label><input id="newProjName" required placeholder="Ej. Vivienda Unifamiliar Pozuelo"></div>
+          <div><label>Cliente</label><input id="newProjClient" required placeholder="Ej. Familia R."></div>
+          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
+            <button type="submit" class="btn primary">Crear Obra</button>
+          </div>
+        </form>
+      `;
+      $('#addProjectForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const name = $('#newProjName').value.trim();
+        const client = $('#newProjClient').value.trim();
+        if(state.projects.some(p=>p.name.toLowerCase()===name.toLowerCase())) return toast('Ya existe una obra con ese nombre');
+        state.projects.unshift({id:Date.now(),name,client,phase:'Anteproyecto',status:'En plazo',budget:0,spent:0,notes:'Nueva obra creada.'});
+        $('#projectModal').style.display='none';
+        save();
+        setSection('obras');
+      });
+      $('#projectModal').style.display='flex';
+    }
+
+    function openAddNoteModal(){
+      $('#modalTitle').textContent = "Nueva Nota Rápida";
+      $('#modalSub').textContent = "Anotación interna temporal";
+      $('#modalBody').innerHTML = `
+        <form class="form" id="addNoteForm">
+          <div><label>Título de la nota</label><input id="newNoteTitle" required placeholder="Ej. Revisar mediciones estructurales"></div>
+          <div><label>Contenido / Detalles</label><textarea id="newNoteBody" rows="3" placeholder="Añade anotaciones adicionales..."></textarea></div>
+          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
+            <button type="submit" class="btn primary">Guardar Nota</button>
+          </div>
+        </form>
+      `;
+      $('#addNoteForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const title = $('#newNoteTitle').value.trim();
+        const body = $('#newNoteBody').value.trim();
+        if(!state.notes) state.notes = [];
+        state.notes.unshift({id:Date.now(),title,body,date:getLocalDateString()});
+        $('#projectModal').style.display='none';
+        save();
+      });
+      $('#projectModal').style.display='flex';
+    }
+
+    function openAddAlertModal(){
+      $('#modalTitle').textContent = "Nueva Alerta";
+      $('#modalSub').textContent = "Recordatorio de vencimiento crítico";
+      $('#modalBody').innerHTML = `
+        <form class="form" id="addAlertForm">
+          <div><label>Concepto de la Alerta</label><input id="newAlertText" required placeholder="Ej. Entregar visado en el ayuntamiento"></div>
+          <div><label>Fecha límite</label><input type="date" id="newAlertDate" value="${getLocalDateString()}" required></div>
+          <div class="card-actions-centered" style="border:none; margin-top:14px;">
+            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
+            <button type="submit" class="btn primary">Guardar Alerta</button>
+          </div>
+        </form>
+      `;
+      $('#addAlertForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const text = $('#newAlertText').value.trim();
+        const date = $('#newAlertDate').value;
+        if(!state.alerts) state.alerts = [];
+        state.alerts.unshift({id:Date.now(),text,date});
+        $('#projectModal').style.display='none';
+        save();
+      });
       $('#projectModal').style.display='flex';
     }
 
@@ -586,7 +662,6 @@
       $('#kpis').innerHTML=updateKpis();
       const k=calc();
       
-      /* Corregido: Limpieza total de cadenas de texto huérfanas en las métricas */
       $('#todayStats').innerHTML=[
         ['Visitas',state.tasks.filter(t=>t.date===getLocalDateString()).length],
         ['Obras críticas',k.urgent],
@@ -732,18 +807,10 @@
       setSection('documentos');
     };
 
-    function addProject(){
-      const name=prompt('Nombre de la obra');
-      if(!name || !name.trim()) return;
-      if(state.projects.some(p=>p.name.toLowerCase()===name.trim().toLowerCase())) return toast('Ya existe una obra con ese nombre');
-      const client=prompt('Cliente');
-      if(!client || !client.trim()) return;
-      state.projects.unshift({id:Date.now(),name:name.trim(),client:client.trim(),phase:'Anteproyecto',status:'En plazo',budget:0,spent:0,notes:'Nueva obra creada.'});
-      save();
-      setSection('obras');
-    }
-
-    $('#newProject2').onclick=()=>{addProject();};
+    /* Vinculación de los gatillos de alta a los nuevos modales limpios */
+    $('#newProject2').onclick=()=>{openAddProjectModal();};
+    $('#addNoteBtn')?.addEventListener('click', () => { openAddNoteModal(); });
+    $('#addAlertBtn')?.addEventListener('click', () => { openAddAlertModal(); });
 
     $('#themeBtn').onclick=()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'; toast('Tema cambiado');};
     $('#exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='obra-clara-pro.json'; a.click(); toast('Exportado');};
@@ -774,24 +841,7 @@
 
     $('#closeModalBtn').onclick=()=>$('#projectModal').style.display='none';
     $('#projectModal').addEventListener('click',e=>{if(e.target.id==='projectModal') $('#projectModal').style.display='none';});
-    $('#addNoteBtn')?.addEventListener('click',()=>{
-      const title=prompt('Título');
-      if(!title || !title.trim()) return;
-      const body=prompt('Contenido')||'';
-      if(!state.notes) state.notes = [];
-      state.notes.unshift({id:Date.now(),title:title.trim(),body:body.trim(),date:getLocalDateString()});
-      save();
-    });
-    $('#addAlertBtn')?.addEventListener('click',()=>{
-      const text=prompt('Alerta');
-      if(!text || !text.trim()) return;
-      const date=prompt('Fecha YYYY-MM-DD',getLocalDateString())||getLocalDateString();
-      if(!state.alerts) state.alerts = [];
-      state.alerts.unshift({id:Date.now(),text:text.trim(),date});
-      save();
-    });
 
-    /* Inicialización inicial sopesada del histórico */
     syncProjectExpenses();
     render();
   </script>
