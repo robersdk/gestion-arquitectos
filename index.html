@@ -238,7 +238,6 @@
               <h3 id="modalTitle">Detalle de obra</h3>
               <div class="muted" id="modalSub"></div>
             </div>
-            <button class="btn secondary-neutral" id="closeModalBtn">Cerrar</button>
           </div>
           <div id="modalBody"></div>
         </div>
@@ -388,13 +387,14 @@
       const p=state.projects.find(x=>x.id==id);
       if(!p) return;
       
-      /* Corregido: Se ha restaurado el botón sutil de cierre de cabecera en las vistas exclusivas de lectura detallada */
-      $('.row', '#projectModal').innerHTML = `<div><h3>Detalle de obra</h3><div class="muted" id="modalSub">${p.name}</div></div><button class="btn secondary-neutral" id="closeModalBtn" onclick="$('#projectModal').style.display='none'">Cerrar</button>`;
+      /* Corregido: Se unificó la cabecera eliminando la acción de aspa superior */
+      $('.row', '#projectModal').innerHTML = `<div><h3>Detalle de obra</h3><div class="muted" id="modalSub">${p.name} · ${p.client}</div></div>`;
       
       const pt=state.tasks.filter(t=>t.projectId==id);
       const pm=state.money.filter(m=>m.projectId==id);
       const pd=state.docs.filter(d=>d.projectId==id);
       
+      /* Corregido: Botón unificado 'Cerrar' reubicado en la botonera de base */
       $('#modalBody').innerHTML = `
         <div class="split">
           <div>
@@ -413,6 +413,9 @@
           <h3 style="font-size:16px;margin-bottom:8px">Economía</h3>
           ${pm.map(m=>`<div class="item"><div class="row"><strong>${m.concept}</strong><strong style="color:var(${m.type==='Ingreso'?'--good':'--bad'})">${m.type==='Ingreso'?'+':'-'}${fmt(m.amount)}</strong></div></div>`).join('')||'<div class="item">Sin movimientos</div>'}
         </div>
+        <div class="card-actions-centered" style="margin-top:20px;">
+          <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cerrar</button>
+        </div>
       `;
       $('#projectModal').style.display='flex';
     }
@@ -421,8 +424,8 @@
       const n = (state.notes||[]).find(x=>x.id==id);
       if(!n) return;
       
-      /* Corregido: Se ha restaurado el botón de cierre en la lectura de la nota rápida */
-      $('.row', '#projectModal').innerHTML = `<div><h3>${n.title}</h3><div class="muted" id="modalSub">Creada el ${n.date || '—'}</div></div><button class="btn secondary-neutral" id="closeModalBtn" onclick="$('#projectModal').style.display='none'">Cerrar</button>`;
+      /* Corregido: Se limpió la cabecera superior del aspa redundante */
+      $('.row', '#projectModal').innerHTML = `<div><h3>${n.title}</h3><div class="muted" id="modalSub">Creada el ${n.date || '—'}</div></div>`;
       
       let docHtml = '';
       if(n.docId) {
@@ -437,17 +440,17 @@
         }
       }
 
+      /* Corregido: Botón unificado de base centralizado */
       $('#modalBody').innerHTML = `
         <div class="item" style="background:var(--surface2); padding:16px; white-space:pre-wrap; font-size:15px; border:1px solid var(--border)">${n.body || '<span class="muted">Esta nota no contiene descripción de texto.</span>'}</div>
         ${docHtml}
-        <div class="card-actions-centered" style="border:none; margin-top:14px;">
-          <button type="button" class="btn primary" onclick="$('#projectModal').style.display='none'">Entendido</button>
+        <div class="card-actions-centered" style="margin-top:20px;">
+          <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cerrar</button>
         </div>
       `;
       $('#projectModal').style.display='flex';
     }
 
-    /* Corregido: Eliminados botones redundantes de aspa en las vistas que ya contienen botoneras de 'Cancelar' e inyección limpia */
     function openAddProjectModal(){
       $('.row', '#projectModal').innerHTML = `<div><h3>Nueva Obra</h3><div class="muted">Alta de proyecto en el estudio</div></div>`;
       $('#modalBody').innerHTML = `
@@ -887,7 +890,6 @@
       }
     };
 
-    /* El disparador global fuera de las tarjetas cierra el modal independientemente de la vista inyectada */
     $('#projectModal').addEventListener('click',e=>{if(e.target.id==='projectModal') $('#projectModal').style.display='none';});
 
     syncProjectExpenses();
