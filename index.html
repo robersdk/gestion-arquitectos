@@ -371,7 +371,7 @@
               <div><strong>${n.title}</strong> ${hasDoc}</div>
               <div style="display:flex; gap:6px;">
                 <button class="btn action-view" data-view-note="${n.id}">Ver</button>
-                <button class="btn action-delete" data-del-note="${n.id}">Borrar</button>
+                <button class="btn action-delete" data-trigger-del="note" data-id="${n.id}">Borrar</button>
               </div>
             </div>
           </div>
@@ -380,21 +380,19 @@
     }
     
     function renderAlerts(){
-      $('#alertsList').innerHTML=(state.alerts||[]).map(a=>`<div class="item"><div class="row"><div><strong>${a.text}</strong><div class="muted">${a.date}</div></div><button class="btn action-delete" data-del-alert="${a.id}">Borrar</button></div></div>`).join('') || '<div class="item">Sin alertas</div>';
+      $('#alertsList').innerHTML=(state.alerts||[]).map(a=>`<div class="item"><div class="row"><div><strong>${a.text}</strong><div class="muted">${a.date}</div></div><button class="btn action-delete" data-trigger-del="alert" data-id="${a.id}">Borrar</button></div></div>`).join('') || '<div class="item">Sin alertas</div>';
     }
     
     function openProjectModal(id){
       const p=state.projects.find(x=>x.id==id);
       if(!p) return;
       
-      /* Corregido: Se unificó la cabecera eliminando la acción de aspa superior */
       $('.row', '#projectModal').innerHTML = `<div><h3>Detalle de obra</h3><div class="muted" id="modalSub">${p.name} · ${p.client}</div></div>`;
       
       const pt=state.tasks.filter(t=>t.projectId==id);
       const pm=state.money.filter(m=>m.projectId==id);
       const pd=state.docs.filter(d=>d.projectId==id);
       
-      /* Corregido: Botón unificado 'Cerrar' reubicado en la botonera de base */
       $('#modalBody').innerHTML = `
         <div class="split">
           <div>
@@ -424,7 +422,6 @@
       const n = (state.notes||[]).find(x=>x.id==id);
       if(!n) return;
       
-      /* Corregido: Se limpió la cabecera superior del aspa redundante */
       $('.row', '#projectModal').innerHTML = `<div><h3>${n.title}</h3><div class="muted" id="modalSub">Creada el ${n.date || '—'}</div></div>`;
       
       let docHtml = '';
@@ -440,7 +437,6 @@
         }
       }
 
-      /* Corregido: Botón unificado de base centralizado */
       $('#modalBody').innerHTML = `
         <div class="item" style="background:var(--surface2); padding:16px; white-space:pre-wrap; font-size:15px; border:1px solid var(--border)">${n.body || '<span class="muted">Esta nota no contiene descripción de texto.</span>'}</div>
         ${docHtml}
@@ -449,6 +445,46 @@
         </div>
       `;
       $('#projectModal').style.display='flex';
+    }
+
+    /* Añadido: Sistema de confirmación visual integrado mediante modal */
+    function openConfirmDeleteModal(type, id) {
+      let message = "¿Estás seguro de que deseas eliminar este elemento de forma permanente?";
+      if (type === 'project') message = "¡Atención! Al borrar esta obra se eliminarán también todas sus tareas, documentos e historial económico vinculados.";
+      
+      $('.row', '#projectModal').innerHTML = `<div><h3>Confirmar eliminación</h3><div class="muted">Acción destructiva irreversible</div></div>`;
+      
+      $('#modalBody').innerHTML = `
+        <div class="item" style="background:color-mix(in srgb, var(--bad) 8%, transparent); border-color:var(--bad); padding:16px; font-weight:500; text-align:center;">
+          ${message}
+        </div>
+        <div class="card-actions-centered" style="margin-top:20px; gap:16px;">
+          <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
+          <button type="button" class="btn action-delete" id="confirmDeleteBtn">Eliminar permanentemente</button>
+        </div>
+      `;
+
+      $('#confirmDeleteBtn').onclick = () => {
+        executeDelete(type, id);
+        $('#projectModal').style.display = 'none';
+      };
+
+      $('#projectModal').style.display = 'flex';
+    }
+
+    function executeDelete(type, id) {
+      if (type === 'project') {
+        state.projects = state.projects.filter(x => x.id != id);
+        state.tasks = state.tasks.filter(x => x.projectId != id);
+        state.money = state.money.filter(x => x.projectId != id);
+        state.docs = state.docs.filter(x => x.projectId != id);
+      }
+      if (type === 'task') state.tasks = state.tasks.filter(x => x.id != id);
+      if (type === 'money') state.money = state.money.filter(x => x.id != id);
+      if (type === 'doc') state.docs = state.docs.filter(x => x.id != id);
+      if (type === 'note') state.notes = (state.notes || []).filter(x => x.id != id);
+      if (type === 'alert') state.alerts = (state.alerts || []).filter(x => x.id != id);
+      save();
     }
 
     function openAddProjectModal(){
@@ -734,7 +770,7 @@
           <div class="card-actions-centered">
             <button class="btn action-view" data-view-project="${p.id}">Ver</button>
             <button class="btn action-edit" data-edit-project="${p.id}">Editar</button>
-            <button class="btn action-delete" data-del-project="${p.id}">Borrar</button>
+            <button class="btn action-delete" data-trigger-del="project" data-id="${p.id}">Borrar</button>
           </div>
         </div>
       `).join('') || '<div class="item">Sin resultados</div>';
@@ -748,7 +784,7 @@
           <label class="meta" style="margin-top:4px"><input class="check" type="checkbox" data-task-done="${t.id}" ${t.done?'checked':''}> Marcar como hecha</label>
           <div class="card-actions-centered">
             <button class="btn action-edit" data-edit-task="${t.id}">Editar</button>
-            <button class="btn action-delete" data-del-task="${t.id}">Borrar</button>
+            <button class="btn action-delete" data-trigger-del="task" data-id="${t.id}">Borrar</button>
           </div>
         </div>
       `).join('') || '<div class="item">Sin resultados</div>';
@@ -761,7 +797,7 @@
           </div>
           <div class="card-actions-centered">
             <button class="btn action-edit" data-edit-money="${m.id}">Editar</button>
-            <button class="btn action-delete" data-del-money="${m.id}">Borrar</button>
+            <button class="btn action-delete" data-trigger-del="money" data-id="${m.id}">Borrar</button>
           </div>
         </div>
       `).join('') || '<div class="item">Sin resultados</div>';
@@ -774,7 +810,7 @@
           </div>
           <div class="card-actions-centered">
             <button class="btn action-edit" data-edit-doc="${d.id}">Editar</button>
-            <button class="btn action-delete" data-del-doc="${d.id}">Borrar</button>
+            <button class="btn action-delete" data-trigger-del="doc" data-id="${d.id}">Borrar</button>
           </div>
         </div>
       `).join('') || '<div class="item">Sin resultados</div>';
@@ -799,20 +835,12 @@
         const task=state.tasks.find(x=>x.id==d.taskDone);
         if(task){task.done=e.target.checked; save();}
       }
-      if(d.delProject){
-        if(confirm('¿Borrar obra?')){
-          state.projects=state.projects.filter(x=>x.id!=d.delProject);
-          state.tasks=state.tasks.filter(x=>x.projectId!=d.delProject);
-          state.money=state.money.filter(x=>x.projectId!=d.delProject);
-          state.docs=state.docs.filter(x=>x.projectId!=d.delProject);
-          save();
-        }
+      
+      /* Corregido: Delegación del disparador de borrado unificado hacia el nuevo modal modal interactivo */
+      if(d.triggerDel) {
+        openConfirmDeleteModal(d.triggerDel, d.id);
       }
-      if(d.delTask){ if(confirm('¿Borrar tarea?')){ state.tasks=state.tasks.filter(x=>x.id!=d.delTask); save(); } }
-      if(d.delMoney){ if(confirm('¿Borrar movimiento?')){ state.money=state.money.filter(x=>x.id!=d.delMoney); save(); } }
-      if(d.delDoc){ if(confirm('¿Borrar documento?')){ state.docs=state.docs.filter(x=>x.id!=d.delDoc); save(); } }
-      if(d.delNote){ if(confirm('¿Borrar nota rápida?')){ state.notes=(state.notes||[]).filter(x=>x.id!=d.delNote); save(); } }
-      if(d.delAlert){ if(confirm('¿Borrar alerta de vencimiento?')){ state.alerts=(state.alerts||[]).filter(x=>x.id!=d.delAlert); save(); } }
+      
       if(d.viewProject){ openProjectModal(d.viewProject); }
       if(d.viewNote){ openNoteViewModal(d.viewNote); }
       if(d.editProject){ openEditProjectModal(d.editProject); }
