@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#0e6c73" />
   <title>Obra Clara Pro</title>
   <meta name="description" content="MVP funcional para estudios de arquitectura: obras, tareas, documentos, agenda y control económico." />
+  <!-- SDK Oficial de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{--bg:#f6f4ef;--surface:#ffffff;--surface2:#f0ece5;--text:#1f1d18;--muted:#67625a;--border:#ddd6ca;--primary:#0e6c73;--primary2:#155f66;--good:#2f7a34;--warn:#b16d1f;--bad:#b33c54;--info:#456bba;--shadow:0 10px 28px rgba(31,29,24,.08);--r:18px;--r2:12px;font-family:Inter,system-ui,sans-serif}
     [data-theme=dark]{--bg:#141312;--surface:#1b1a18;--surface2:#23211f;--text:#ede8dc;--muted:#a59f94;--border:#34312d;--primary:#59aab0;--primary2:#3f8d93;--good:#76b85d;--warn:#d09b4d;--bad:#d56f8c;--info:#7aa0ef;--shadow:0 10px 28px rgba(0,0,0,.25)}
@@ -201,11 +203,11 @@
               <div class="stack" id="docsList" style="margin-top:14px"></div>
             </div>
             <div class="card">
-              <h3>Subir referencia</h3>
+              <h3>Subir archivo real</h3>
               <form class="form" id="docForm">
-                <div><label>Obra</label><select id="docProject"></select></div>
-                <div><label>Nombre archivo</label><input id="docName" required placeholder="Ej. memoria-basica.pdf"></div>
-                <div><label>Tipo</label><select id="docType"><option>PDF</option><option>DWG</option><option>DOCX</option><option>IMG</option></select></div>
+                <div><label>Obra relacionada</label><select id="docProject"></select></div>
+                <div><label>Seleccionar archivo binario</label><input id="docName" type="file" required></div>
+                <div><label>Tipo de extensión</label><select id="docType"><option>PDF</option><option>DWG</option><option>DOCX</option><option>IMG</option></select></div>
                 <button class="btn primary" type="submit">Guardar documento</button>
               </form>
             </div>
@@ -242,7 +244,6 @@
 
       <div id="projectModal">
         <div class="card">
-          <!-- Corregido: ID único e inalterable para evitar mutaciones de fondo en la app trasera -->
           <div class="row" id="modalHeaderRow">
             <div>
               <h3 id="modalTitle">Detalle de obra</h3>
@@ -271,12 +272,9 @@
         {id:1,projectId:1,type:'Ingreso',concept:'Honorarios fase 2',amount:18000,date:'2026-07-18'},
         {id:2,projectId:1,type:'Gasto',concept:'Industrial estructura',amount:5200,date:'2026-07-17'}
       ],
-      docs:[
-        {id:1,projectId:3,name:'memoria-basica.pdf',type:'PDF',date:'2026-07-19'},
-        {id:2,projectId:1,name:'plano-distribucion.dwg',type:'DWG',date:'2026-07-18'}
-      ],
+      docs:[],
       notes:[
-        {id:1,projectId:1,title:'Revisar mediciones estructurales',body:'Antes de cerrar el presupuesto a finales de mes con el calculista.',date:'2026-07-19',docId:1}
+        {id:1,projectId:1,title:'Revisar mediciones estructurales',body:'Antes de cerrar el presupuesto a finales de mes con el calculista.',date:'2026-07-19',docId:null}
       ],
       alerts:[
         {id:1,text:'Entregar documentación de Pozuelo',date:'2026-07-23'}
@@ -286,6 +284,11 @@
     let state = load();
     const $ = s => document.querySelector(s);
     const fmt = n => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n);
+
+    // Conexión real a tu clúster de Supabase
+    const supabaseUrl = 'https://fatrjeaalnlorctlvqxb.supabase.co';
+    const supabaseKey = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdHJqZWFhbG5sb3JjdGx2cXhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0OTAzMjIsImV4cCI6MjEwMDA2NjMyMn0._BeajzkvD28ECBlNdq65HCQWuA4gKrGtrUt-V8mlVxc';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     function load(){
       try {
@@ -320,9 +323,6 @@
     }
     function projectName(id){
       return (state.projects.find(p=>p.id==id)||{}).name||'—'
-    }
-    function docName(id){
-      return (state.docs.find(d=>d.id==id)||{}).name||''
     }
     function statusBadge(s){
       const c=s==='En plazo'?'good':s==='Bloqueado'?'warn':'bad';
@@ -397,7 +397,6 @@
       const p=state.projects.find(x=>x.id==id);
       if(!p) return;
       
-      /* Corregido: Forzado estricto del ID #modalHeaderRow para evitar fugas de selectores */
       $('#modalHeaderRow').innerHTML = `<div><h3>Detalle de obra</h3><div class="muted" id="modalSub">${p.name} · ${p.client}</div></div>`;
       const pt=state.tasks.filter(t=>t.projectId==id);
       const pm=state.money.filter(m=>m.projectId==id);
@@ -432,16 +431,15 @@
       const n = (state.notes||[]).find(x=>x.id==id);
       if(!n) return;
       
-      /* Corregido: Target unificado a #modalHeaderRow */
       $('#modalHeaderRow').innerHTML = `<div><h3>${n.title}</h3><div class="muted" id="modalSub">Creada el ${n.date || '—'}</div></div>`;
       let docHtml = '';
       if(n.docId) {
         const d = state.docs.find(x => x.id == n.docId);
-        if(d) {
+        if(d && d.url) {
           docHtml = `
             <div style="margin-top: 14px;">
               <h3 style="font-size:14px; margin-bottom:6px;">Documento de Referencia Vinculado:</h3>
-              <div class="badge info" style="font-size:13px; padding: 6px 12px; border-radius: 8px;">📎 ${d.name} (${d.type})</div>
+              <a href="${d.url}" target="_blank" download="${d.name}" class="badge info" style="font-size:13px; padding: 6px 12px; border-radius: 8px; text-decoration:none; display:inline-block;">📎 Descargar: ${d.name}</a>
             </div>
           `;
         }
@@ -461,7 +459,6 @@
       let message = "¿Estás seguro de que deseas eliminar este elemento de forma permanente?";
       if (type === 'project') message = "¡Atención! Al borrar esta obra se eliminarán también todas sus tareas, documentos e historial económico vinculados.";
       
-      /* Corregido: Target directo al ID del modal para blindar el fondo */
       $('#modalHeaderRow').innerHTML = `<div><h3>Confirmar eliminación</h3><div class="muted">Acción destructiva irreversible</div></div>`;
       
       $('#modalBody').innerHTML = `
@@ -474,23 +471,36 @@
         </div>
       `;
 
-      $('#confirmDeleteBtn').onclick = () => {
-        executeDelete(type, id);
+      $('#confirmDeleteBtn').onclick = async () => {
+        await executeDelete(type, id);
         $('#projectModal').style.display = 'none';
       };
       $('#projectModal').style.display = 'flex';
     }
 
-    function executeDelete(type, id) {
+    async function executeDelete(type, id) {
       if (type === 'project') {
         state.projects = state.projects.filter(x => x.id != id);
         state.tasks = state.tasks.filter(x => x.projectId != id);
         state.money = state.money.filter(x => x.projectId != id);
+        
+        // Borrar archivos vinculados en Supabase Storage
+        const filesToDel = state.docs.filter(x => x.projectId == id);
+        for(let f of filesToDel) {
+          if(f.filePath) await supabase.storage.from('documentos').remove([f.filePath]);
+        }
         state.docs = state.docs.filter(x => x.projectId != id);
       }
       if (type === 'task') state.tasks = state.tasks.filter(x => x.id != id);
       if (type === 'money') state.money = state.money.filter(x => x.id != id);
-      if (type === 'doc') state.docs = state.docs.filter(x => x.id != id);
+      if (type === 'doc') {
+        const targetDoc = state.docs.find(x => x.id == id);
+        if(targetDoc && targetDoc.filePath) {
+          toast('Eliminando binario en la nube...');
+          await supabase.storage.from('documentos').remove([targetDoc.filePath]);
+        }
+        state.docs = state.docs.filter(x => x.id != id);
+      }
       if (type === 'note') state.notes = (state.notes || []).filter(x => x.id != id);
       if (type === 'alert') state.alerts = (state.alerts || []).filter(x => x.id != id);
       save();
@@ -503,7 +513,7 @@
       $('#modalBody').innerHTML = `
         <form class="form" id="addNoteForm">
           <div><label>Título de la nota</label><input id="newNoteTitle" required placeholder="Ej. Revisar mediciones estructurales"></div>
-          <div><label>Vincular Documento de Referencia (Opcional)</label><select id="newNoteDoc">${docOpts}</select></div>
+          <div><label>Vincular Documento (Opcional)</label><select id="newNoteDoc">${docOpts}</select></div>
           <div><label>Contenido / Detalles</label><textarea id="newNoteBody" rows="4" placeholder="Añade anotaciones adicionales..."></textarea></div>
           <div class="card-actions-centered" style="margin-top:14px;">
             <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
@@ -759,7 +769,7 @@
       $('#tasksList').innerHTML=state.tasks.filter(t=>`${t.title} ${projectName(t.projectId)} ${t.priority}`.toLowerCase().includes(q)).map(t=>`
         <div class="item">
           <div class="row">
-            <div>move<strong>${t.title}</strong><div class="meta"><span>${projectName(t.projectId)}</span><span>${t.date}</span></div></div>
+            <div><strong>${t.title}</strong><div class="meta"><span>${projectName(t.projectId)}</span><span>${t.date}</span></div></div>
             <div><span class="badge ${t.priority==='Urgente'?'bad':t.priority==='Alta'?'warn':'good'}">${t.priority}</span></div>
           </div>
           <label class="meta" style="margin-top:4px"><input class="check" type="checkbox" data-task-done="${t.id}" ${t.done?'checked':''}> Marcar como hecha</label>
@@ -787,9 +797,10 @@
         <div class="item">
           <div class="row">
             <div><strong>${d.name}</strong><div class="meta"><span>${projectName(d.projectId)}</span><span>${d.type}</span></div></div>
-            <div><span class="badge info">Guardado</span></div>
+            <div><span class="badge info">Nube</span></div>
           </div>
           <div class="card-actions-centered">
+            ${d.url ? `<a href="${d.url}" target="_blank" download="${d.name}" class="btn action-view" style="display:inline-flex; align-items:center;">Descargar</a>` : ''}
             <button class="btn action-edit" data-edit-doc="${d.id}">Editar</button>
             <button class="btn action-delete" data-trigger-del="doc" data-id="${d.id}">Borrar</button>
           </div>
@@ -861,14 +872,49 @@
       save();
     };
 
-    $('#docForm').onsubmit=e=>{
+    // Modificado: Subida síncrona real y persistente de blobs binarios a Supabase Storage
+    $('#docForm').onsubmit = async e => {
       e.preventDefault();
       const pId = +$('#docProject').value;
       if(!pId) return toast('Crea primero una obra');
-      state.docs.unshift({id:Date.now(),projectId:pId,name:$('#docName').value,type:$('#docType').value,date:getLocalDateString()});
+
+      const fileInput = $('#docName');
+      const file = fileInput.files[0];
+      if(!file) return toast('Selecciona un archivo válido');
+
+      toast('Subiendo archivo a la nube...');
+
+      const fileExt = file.name.split('.').pop();
+      const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '');
+      const filePath = `obra_${pId}/${Date.now()}_${cleanName}`;
+
+      const { data, error } = await supabase.storage
+        .from('documentos')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error(error);
+        return toast('Error crítico al subir a Supabase');
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('documentos')
+        .getPublicUrl(filePath);
+
+      state.docs.unshift({
+        id: Date.now(),
+        projectId: pId,
+        name: file.name,
+        type: $('#docType').value,
+        date: getLocalDateString(),
+        url: urlData.publicUrl,
+        filePath: filePath
+      });
+
       e.target.reset();
       if($('#searchInput')) $('#searchInput').value = '';
       save();
+      toast('Documento enlazado con éxito');
     };
 
     $('#addNoteBtn')?.addEventListener('click', () => { openAddNoteModal(); });
