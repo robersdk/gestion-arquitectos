@@ -3,267 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0e6c73" />
   <title>Obra Clara Pro</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{--bg:#f6f4ef;--surface:#ffffff;--surface2:#f0ece5;--text:#1f1d18;--muted:#67625a;--border:#ddd6ca;--primary:#0e6c73;--primary2:#155f66;--good:#2f7a34;--warn:#b16d1f;--bad:#b33c54;--info:#456bba;--shadow:0 10px 28px rgba(31,29,24,.08);--r:18px;--r2:12px;font-family:Inter,system-ui,sans-serif}
-    [data-theme=dark]{--bg:#141312;--surface:#1b1a18;--surface2:#23211f;--text:#ede8dc;--muted:#a59f94;--border:#34312d;--primary:#59aab0;--primary2:#3f8d93;--good:#76b85d;--warn:#d09b4d;--bad:#d56f8c;--info:#7aa0ef;--shadow:0 10px 28px rgba(0,0,0,.25)}
-    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,sans-serif} a{color:inherit;text-decoration:none} button,input,select,textarea{font:inherit}
-    .app{display:grid;grid-template-columns:280px 1fr;min-height:100vh} .side{padding:22px;border-right:1px solid var(--border);background:var(--surface);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:16px}
-    .brand{display:flex;gap:12px;align-items:center}.logo{width:44px;height:44px;border-radius:14px;background:var(--primary);display:grid;place-items:center;color:white;font-weight:800}
-    h1,h2,h3{margin:0;line-height:1.1} h1{font-size:20px} h2{font-size:28px} h3{font-size:18px}
-    .nav{display:grid;gap:8px}.nav button,.nav a,.pillbtn,.btn{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:999px;padding:10px 14px;cursor:pointer;min-height:42px;transition:.15s ease}
-    .nav button:hover,.pillbtn:hover,.btn:hover,.nav a:hover{transform:translateY(-1px)}
-    .nav button.active,.nav a.active,.btn.primary{background:var(--primary);border-color:var(--primary);color:white}
-    .sidecard{margin-top:auto;padding:14px;border:1px solid var(--border);background:var(--surface2);border-radius:16px}
-    .main{min-width:0} .top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);z-index:5}
-    .grid{max-width:1280px;margin:0 auto;padding:22px;display:grid;gap:18px} .hero,.cards,.two{display:grid;gap:18px}.hero{grid-template-columns:1.2fr .8fr}.cards{grid-template-columns:repeat(4,1fr)} .two{grid-template-columns:1.15fr .85fr}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}.card.soft{background:var(--surface2);box-shadow:none}
-    .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--primary);font-weight:700}.muted{color:var(--muted)} .kpi strong{display:block;font-size:28px;margin-top:6px} .row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start} .stack{display:grid;gap:12px}
-    .item{padding:14px;border-radius:14px;background:var(--surface2);border:1px solid rgba(0,0,0,.03);display:grid;gap:6px} .meta{display:flex;flex-wrap:wrap;gap:8px;color:var(--muted);font-size:13px}
-    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;width:max-content} .good{background:color-mix(in srgb, var(--good) 14%, transparent);color:var(--good)} .warn{background:color-mix(in srgb, var(--warn) 14%, transparent);color:var(--warn)} .bad{background:color-mix(in srgb, var(--bad) 14%, transparent);color:var(--bad)} .info{background:color-mix(in srgb, var(--info) 14%, transparent);color:var(--info)}
-    .form{display:grid;gap:10px}.form label{font-size:13px;font-weight:700} .form input,.form select,.form textarea{width:100%;padding:12px 14px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:12px}
-    .list{display:grid;gap:10px}.toolbar{display:flex;gap:10px;flex-wrap:wrap}.section{display:none}.section.active{display:block}.mobile{display:none}
-    .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    .table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px} .table th,.table td{text-align:left;padding:12px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top} .table th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
-    .check{width:18px;height:18px;accent-color:var(--primary)}
-    
-    .btn.action-view{background:color-mix(in srgb, var(--primary) 10%, transparent);border-color:var(--primary);color:var(--primary)}
-    .btn.action-view:hover{background:var(--primary);color:white}
-    .btn.action-edit{background:color-mix(in srgb, var(--info) 12%, transparent);border-color:var(--info);color:var(--info)}
-    .btn.action-edit:hover{background:var(--info);color:white}
-    .btn.action-delete{background:color-mix(in srgb, var(--bad) 12%, transparent);border-color:var(--bad);color:var(--bad)}
-    .btn.action-delete:hover{background:var(--bad);color:white}
-    .btn.secondary-neutral{background:var(--surface2);border-color:var(--border);color:var(--text)}
-
-    .toast{position:fixed;left:50%;top:24px;bottom:auto;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);padding:12px 16px;border-radius:999px;z-index:100;display:none}
-    .toast.show{display:block}
-    .footer-note{padding:0 22px 22px;color:var(--muted);font-size:13px}
-    
-    #projectModal{position:fixed;inset:0;background:rgba(20,19,18,0.6);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:150;padding:20px;overscroll-behavior:contain}
-    #projectModal .card{max-width:760px;width:100%;max-height:calc(100vh - 120px);overflow-y:auto;display:flex;flex-direction:column;gap:16px;overscroll-behavior:contain}
-    
-    #projectModal input, #projectModal select, #projectModal textarea {color:var(--text); background:var(--surface2)}
-    
-    .card-actions-centered{display:flex;gap:12px;margin-top:12px;border-top:1px solid var(--border);padding-top:10px;justify-content:center;flex-wrap:wrap}
-
-    @media (max-width:1000px){
-      .hero,.two,.split{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.app{grid-template-columns:1fr}.side{display:none}
-      .grid{padding-bottom:100px}
-      .mobile{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:fixed;left:0;right:0;bottom:0;background:var(--surface);padding:12px 16px 20px;border-top:1px solid var(--border);border-radius:0;z-index:90;box-shadow:0 -4px 20px rgba(0,0,0,.04)}
-      #projectModal{padding-bottom:100px}
-      #projectModal .card{max-height:calc(100vh - 160px)}
-    }
+    :root{--bg:#f6f4ef;--surface:#ffffff;--text:#1f1d18;--primary:#0e6c73;--border:#ddd6ca}
+    body{font-family:system-ui;background:var(--bg);color:var(--text);margin:0;padding:20px}
+    .card{background:var(--surface);padding:20px;border-radius:12px;border:1px solid var(--border);margin-bottom:20px}
+    .btn{padding:10px 15px;border-radius:999px;border:none;background:var(--primary);color:white;cursor:pointer}
+    .item{padding:10px;background:#f0ece5;margin-bottom:5px;border-radius:8px}
   </style>
 </head>
 <body>
   <div class="app">
-    <aside class="side">
-      <div class="brand"><div class="logo">O</div><div><h1>Obra Clara Pro</h1><div class="muted" style="font-size:12px">Gestión para arquitectos</div></div></div>
-      <div class="nav">
-        <button class="active" data-go="inicio">Inicio</button>
-        <button data-go="obras">Obras</button>
-        <button data-go="tareas">Tareas</button>
-        <button data-go="economia">Economía</button>
-        <button data-go="documentos">Documentos</button>
-        <button data-go="ajustes">Ajustes</button>
-      </div>
-    </aside>
-    <main class="main" id="contenido">
-      <div class="top">
-        <div><div class="eyebrow">MVP funcional</div><h3 id="pageTitle">Inicio</h3></div>
-        <div class="toolbar"><button class="pillbtn" id="themeBtn">Tema</button></div>
-      </div>
-      <div class="grid">
-        <section class="section active" id="inicio">
-          <div class="hero">
-            <div class="card">
-              <h2>Controla obras, tareas, documentos y presupuesto desde una sola app.</h2>
-              <p class="muted">Esta versión está conectada con almacenamiento real en la nube.</p>
-            </div>
-            <div class="card soft"><h3>Hoy</h3><div class="stack" id="todayStats"></div></div>
-          </div>
-          <div class="cards" style="margin-top:18px" id="kpis"></div>
-          <div class="split" style="margin-top:18px">
-            <div class="card">
-              <div class="row"><div><h3>Notas</h3></div><button class="btn primary" id="addNoteBtn">Nueva nota</button></div>
-              <div class="stack" id="notesList" style="margin-top:14px"></div>
-            </div>
-            <div class="card">
-              <div class="row"><div><h3>Alertas</h3></div><button class="btn primary" id="addAlertBtn">Nueva alerta</button></div>
-              <div class="stack" id="alertsList" style="margin-top:14px"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="section" id="obras">
-          <div class="two">
-            <div class="card">
-              <h3>Obras</h3>
-              <div class="list" id="projectsList"></div>
-            </div>
-            <div class="card">
-              <h3>Nueva Obra</h3>
-              <form class="form" id="projectForm">
-                <div><label>Nombre</label><input id="newProjName" required></div>
-                <div><label>Cliente</label><input id="newProjClient" required></div>
-                <button class="btn primary" type="submit">Crear Obra</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <section class="section" id="tareas">
-          <div class="two">
-            <div class="card"><h3>Tareas</h3><div class="stack" id="tasksList"></div></div>
-            <div class="card">
-              <h3>Nueva tarea</h3>
-              <form class="form" id="taskForm">
-                <div><label>Obra</label><select id="taskProject"></select></div>
-                <div><label>Título</label><input id="taskTitle" required></div>
-                <div><label>Fecha</label><input id="taskDate" type="date" required></div>
-                <button class="btn primary" type="submit">Guardar tarea</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <section class="section" id="economia">
-          <div class="two">
-            <div class="card"><h3>Control económico</h3><div class="stack" id="moneyList"></div></div>
-            <div class="card">
-              <h3>Nuevo movimiento</h3>
-              <form class="form" id="moneyForm">
-                <div><label>Obra</label><select id="moneyProject"></select></div>
-                <div><label>Importe</label><input id="moneyAmount" type="number" step="0.01" required></div>
-                <div><label>Concepto</label><input id="moneyConcept" required></div>
-                <button class="btn primary" type="submit">Guardar</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <section class="section" id="documentos">
-          <div class="two">
-            <div class="card"><h3>Documentos</h3><div class="stack" id="docsList"></div></div>
-            <div class="card">
-              <h3>Subir archivo real</h3>
-              <form class="form" id="docForm">
-                <div><label>Obra</label><select id="docProject"></select></div>
-                <div><label>Seleccionar archivo</label><input id="docName" type="file" required style="padding:8px"></div>
-                <div><label>Tipo</label><select id="docType"><option>PDF</option><option>DWG</option><option>DOCX</option></select></div>
-                <button class="btn primary" type="submit">Subir a la nube</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <section class="section" id="ajustes">
-          <div class="card">
-            <h3>Ajustes</h3>
-            <button class="btn action-delete" id="resetBtn">Borrar datos locales</button>
-          </div>
-        </section>
-      </div>
-
-      <div class="toast" id="toast"></div>
-
-      <div id="projectModal">
+    <nav>
+      <button onclick="setSection('obras')">Obras</button>
+      <button onclick="setSection('documentos')">Documentos</button>
+    </nav>
+    <main id="main">
+      <section class="section" id="obras" style="display:none">
         <div class="card">
-          <div class="row" id="modalHeaderRow"><div><h3>Detalle</h3></div></div>
-          <div id="modalBody"></div>
+          <h3>Obras</h3>
+          <div id="projectsList"></div>
         </div>
-      </div>
+        <div class="card">
+          <form id="projectForm">
+            <input id="newProjName" placeholder="Nombre obra" required>
+            <input id="newProjClient" placeholder="Cliente" required>
+            <button class="btn" type="submit">Crear</button>
+          </form>
+        </div>
+      </section>
+      <section class="section" id="documentos" style="display:none">
+        <div class="card">
+          <h3>Documentos en Nube</h3>
+          <div id="docsList"></div>
+        </div>
+        <div class="card">
+          <form id="docForm">
+            <select id="docProject"></select>
+            <input id="docFile" type="file" required>
+            <button class="btn" type="submit">Subir a Supabase</button>
+          </form>
+        </div>
+      </section>
     </main>
   </div>
 
   <script>
-    const KEY='obra-clara-pro-v5';
-    const supabaseUrl = 'https://fatrjeaalnlorctlvqxb.supabase.co';
-    const supabaseKey = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdHJqZWFhbG5sb3JjdGx2cXhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0OTAzMjIsImV4cCI6MjEwMDA2NjMyMn0._BeajzkvD28ECBlNdq65HCQWuA4gKrGtrUt-V8mlVxc';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const KEY = 'obra-clara-pro-v5';
+    const supabase = window.supabase.createClient('https://fatrjeaalnlorctlvqxb.supabase.co', 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdHJqZWFhbG5sb3JjdGx2cXhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0OTAzMjIsImV4cCI6MjEwMDA2NjMyMn0._BeajzkvD28ECBlNdq65HCQWuA4gKrGtrUt-V8mlVxc');
 
-    let state = { projects:[], tasks:[], money:[], docs:[], notes:[], alerts:[] };
-    const $ = s => document.querySelector(s);
-    const fmt = n => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n);
+    let state = JSON.parse(localStorage.getItem(KEY)) || { projects: [], docs: [] };
 
-    function load(){
-      state = JSON.parse(localStorage.getItem(KEY)) || state;
-      render();
-    }
-    
-    async function syncFromCloud() {
-      try {
-        const { data } = await supabase.storage.from('documentos').download('db/state.json');
-        if (data) {
-          state = JSON.parse(await data.text());
-          save();
-        }
-      } catch(e) { console.log("Usando datos locales"); }
-    }
-
-    function save(){
+    function save() {
       localStorage.setItem(KEY, JSON.stringify(state));
-      renderOptions();
+      supabase.storage.from('documentos').upload('db/state.json', JSON.stringify(state), { upsert: true });
       render();
-      const stateStr = JSON.stringify(state);
-      const fileBlob = new Blob([stateStr], { type: 'application/json' });
-      supabase.storage.from('documentos').upload('db/state.json', fileBlob, { upsert: true });
-    }
-    
-    function toast(msg){
-      const t=$('#toast');
-      t.textContent=msg;
-      t.classList.add('show');
-      setTimeout(()=>t.classList.remove('show'),2000);
     }
 
-    function render(){
-      $('#projectsList').innerHTML = (state.projects||[]).map(p=>`
-        <div class="item">
-          <strong>${p.name}</strong>
-          <div class="card-actions-centered">
-            <button class="btn action-delete" data-trigger-del="project" data-id="${p.id}">Borrar</button>
-          </div>
-        </div>
+    function render() {
+      document.getElementById('projectsList').innerHTML = state.projects.map(p => `<div class="item">${p.name}</div>`).join('');
+      document.getElementById('docsList').innerHTML = state.docs.map(d => `
+        <div class="item">${d.name} <a href="${d.url}" target="_blank">Descargar</a></div>
       `).join('');
-      // [Aquí irían el resto de funciones de render para tareas, dinero, etc...]
-      renderOptions();
+      const opts = state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      if(document.getElementById('docProject')) document.getElementById('docProject').innerHTML = opts;
     }
 
-    function renderOptions(){
-      const options=(state.projects||[]).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-      ['#taskProject','#moneyProject','#docProject'].forEach(id=>{if($(id)) $(id).innerHTML=options;});
+    function setSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
     }
 
-    document.addEventListener('click',e=>{
-      if(e.target.dataset.triggerDel) openConfirmDeleteModal(e.target.dataset.triggerDel, e.target.dataset.id);
-    });
-
-    $('#projectForm').onsubmit=e=>{
+    document.getElementById('projectForm').onsubmit = e => {
       e.preventDefault();
-      state.projects.unshift({id:Date.now(),name:$('#newProjName').value,client:$('#newProjClient').value});
+      state.projects.push({id: Date.now(), name: document.getElementById('newProjName').value});
       save();
-      e.target.reset();
     };
 
-    $('#docForm').onsubmit = async e => {
+    document.getElementById('docForm').onsubmit = async e => {
       e.preventDefault();
-      const file = $('#docName').files[0];
-      const filePath = `docs/${Date.now()}_${file.name}`;
-      await supabase.storage.from('documentos').upload(filePath, file);
-      const { data } = supabase.storage.from('documentos').getPublicUrl(filePath);
-      state.docs.unshift({ id:Date.now(), name:file.name, url:data.publicUrl, filePath });
+      const file = document.getElementById('docFile').files[0];
+      const { data, error } = await supabase.storage.from('documentos').upload(`docs/${file.name}`, file);
+      const { data: urlData } = supabase.storage.from('documentos').getPublicUrl(`docs/${file.name}`);
+      state.docs.push({ id: Date.now(), name: file.name, url: urlData.publicUrl });
       save();
-      toast('Subido a la nube');
     };
 
-    $('#resetBtn').onclick=()=>{localStorage.removeItem(KEY); location.reload();};
-    
-    // Inicializar
-    load();
-    syncFromCloud();
+    setSection('obras');
+    render();
   </script>
 </body>
 </html>
