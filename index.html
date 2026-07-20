@@ -7,8 +7,8 @@
   <title>Obra Clara Pro</title>
   <meta name="description" content="Gestión para estudios de arquitectura: obras, tareas, documentos, agenda y control económico." />
   
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Cargar Supabase desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 
   <style>
     :root{--bg:#f6f4ef;--surface:#ffffff;--surface2:#f0ece5;--text:#1f1d18;--muted:#67625a;--border:#ddd6ca;--primary:#0e6c73;--primary2:#155f66;--good:#2f7a34;--warn:#b16d1f;--bad:#b33c54;--info:#456bba;--shadow:0 10px 28px rgba(31,29,24,.08);--r:18px;--r2:12px;font-family:Inter,system-ui,sans-serif}
@@ -32,7 +32,6 @@
     .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px} .table th,.table td{text-align:left;padding:12px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top} .table th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
     .check{width:18px;height:18px;accent-color:var(--primary)}
-    
     .btn.action-view{background:color-mix(in srgb, var(--primary) 10%, transparent);border-color:var(--primary);color:var(--primary)}
     .btn.action-view:hover{background:var(--primary);color:white}
     .btn.action-edit{background:color-mix(in srgb, var(--info) 12%, transparent);border-color:var(--info);color:var(--info)}
@@ -40,1572 +39,1060 @@
     .btn.action-delete{background:color-mix(in srgb, var(--bad) 12%, transparent);border-color:var(--bad);color:var(--bad)}
     .btn.action-delete:hover{background:var(--bad);color:white}
     .btn.secondary-neutral{background:var(--surface2);border-color:var(--border);color:var(--text)}
-
     .toast{position:fixed;left:50%;top:24px;bottom:auto;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);padding:12px 16px;border-radius:999px;z-index:100;display:none}
     .toast.show{display:block}
     .footer-note{padding:0 22px 22px;color:var(--muted);font-size:13px}
-    
     #projectModal{position:fixed;inset:0;background:rgba(20,19,18,0.6);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:150;padding:20px;overscroll-behavior:contain}
     #projectModal .card{max-width:760px;width:100%;max-height:calc(100vh - 120px);overflow-y:auto;display:flex;flex-direction:column;gap:16px;overscroll-behavior:contain}
-    
     #projectModal input, #projectModal select, #projectModal textarea {color:var(--text); background:var(--surface2)}
-    
     .card-actions-centered{display:flex;gap:12px;margin-top:12px;border-top:1px solid var(--border);padding-top:10px;justify-content:center;flex-wrap:wrap}
-
-    /* Pantalla de login */
-    #loginScreen {
-      position:fixed;inset:0;background:var(--bg);z-index:200;
-      display:none;align-items:center;justify-content:center;padding:20px;
-    }
-    #loginScreen .card{max-width:400px;width:100%;}
-
-    @media (max-width:1000px){
-      .hero,.two,.split{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.app{grid-template-columns:1fr}.side{display:none}
-      .grid{padding-bottom:100px}
-      .mobile{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:fixed;left:0;right:0;bottom:0;background:var(--surface);padding:12px 16px 20px;border-top:1px solid var(--border);border-radius:0;z-index:90;box-shadow:0 -4px 20px rgba(0,0,0,.04)}
-      #projectModal{padding-bottom:100px}
-      #projectModal .card{max-height:calc(100vh - 160px)}
-    }
+    #loginScreen{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+    #loginScreen .card{max-width:400px;width:100%}
+    @media (max-width:1000px){.hero,.two,.split{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.app{grid-template-columns:1fr}.side{display:none}.grid{padding-bottom:100px}.mobile{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:fixed;left:0;right:0;bottom:0;background:var(--surface);padding:12px 16px 20px;border-top:1px solid var(--border);border-radius:0;z-index:90;box-shadow:0 -4px 20px rgba(0,0,0,.04)}#projectModal{padding-bottom:100px}#projectModal .card{max-height:calc(100vh - 160px)}}
     @media (max-width:640px){.cards{grid-template-columns:1fr}.grid{padding:14px;padding-bottom:100px}.top{padding:14px}.table th,.table td{padding:10px 8px}}
   </style>
 </head>
 <body>
-  <!-- Pantalla de Login -->
-  <div id="loginScreen">
-    <div class="card">
-      <div style="text-align:center;margin-bottom:20px;">
-        <div class="logo" style="margin:0 auto;width:60px;height:60px;font-size:28px;">O</div>
-        <h2 style="margin-top:12px;">Obra Clara Pro</h2>
-        <p class="muted">Inicia sesión para continuar</p>
-      </div>
-      
-      <!-- Login -->
-      <form class="form" id="loginForm">
-        <div><label>Email</label><input type="email" id="loginEmail" required placeholder="tu@email.com"></div>
-        <div><label>Contraseña</label><input type="password" id="loginPassword" required placeholder="Mínimo 6 caracteres"></div>
-        <button class="btn primary" type="submit">Iniciar sesión</button>
-        <p style="text-align:center;font-size:14px;margin-top:8px;">
-          ¿No tienes cuenta? <a href="#" id="showRegisterLink">Regístrate</a>
-        </p>
-      </form>
-      
-      <!-- Registro -->
-      <form class="form" id="registerForm" style="display:none;">
-        <div><label>Email</label><input type="email" id="registerEmail" required placeholder="tu@email.com"></div>
-        <div><label>Contraseña</label><input type="password" id="registerPassword" required placeholder="Mínimo 6 caracteres"></div>
-        <button class="btn primary" type="submit">Crear cuenta</button>
-        <p style="text-align:center;font-size:14px;margin-top:8px;">
-          ¿Ya tienes cuenta? <a href="#" id="showLoginLink">Inicia sesión</a>
-        </p>
-      </form>
+
+<!-- Pantalla de Login -->
+<div id="loginScreen">
+  <div class="card">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div class="logo" style="margin:0 auto;width:60px;height:60px;font-size:28px;">O</div>
+      <h2 style="margin-top:12px;">Obra Clara Pro</h2>
+      <p class="muted">Inicia sesión para continuar</p>
     </div>
+    <form class="form" id="loginForm">
+      <div><label>Email</label><input type="email" id="loginEmail" required placeholder="tu@email.com"></div>
+      <div><label>Contraseña</label><input type="password" id="loginPassword" required placeholder="Mínimo 6 caracteres"></div>
+      <button class="btn primary" type="submit">Iniciar sesión</button>
+      <p style="text-align:center;font-size:14px;margin-top:8px;">
+        ¿No tienes cuenta? <a href="#" id="showRegisterLink">Regístrate</a>
+      </p>
+    </form>
+    <form class="form" id="registerForm" style="display:none;">
+      <div><label>Email</label><input type="email" id="registerEmail" required placeholder="tu@email.com"></div>
+      <div><label>Contraseña</label><input type="password" id="registerPassword" required placeholder="Mínimo 6 caracteres"></div>
+      <button class="btn primary" type="submit">Crear cuenta</button>
+      <p style="text-align:center;font-size:14px;margin-top:8px;">
+        ¿Ya tienes cuenta? <a href="#" id="showLoginLink">Inicia sesión</a>
+      </p>
+    </form>
   </div>
+</div>
 
-  <!-- App principal -->
-  <div class="app" id="app" style="display:none;">
-    <aside class="side">
-      <div class="brand"><div class="logo">O</div><div><h1>Obra Clara Pro</h1><div class="muted" style="font-size:12px">Gestión para arquitectos</div></div></div>
-      <div class="nav">
-        <button class="active" data-go="inicio" role="tab" aria-selected="true">Inicio</button>
-        <button data-go="obras" role="tab" aria-selected="false">Obras</button>
-        <button data-go="tareas" role="tab" aria-selected="false">Tareas</button>
-        <button data-go="economia" role="tab" aria-selected="false">Economía</button>
-        <button data-go="documentos" role="tab" aria-selected="false">Documentos</button>
-        <button data-go="ajustes" role="tab" aria-selected="false">Ajustes</button>
-      </div>
-      <div class="sidecard">
-        <strong>Conectado</strong>
-        <div class="muted" id="userEmailDisplay">usuario@email.com</div>
-        <button class="btn secondary-neutral" style="margin-top:10px;width:100%;" id="logoutBtn">Cerrar sesión</button>
-      </div>
-    </aside>
-    <main class="main" id="contenido">
-      <div class="top">
-        <div><div class="eyebrow">SaaS con Supabase</div><h3 id="pageTitle">Inicio</h3></div>
-        <div class="toolbar">
-          <button class="pillbtn" id="themeBtn">Tema</button>
-        </div>
-      </div>
-      <div class="grid">
-        <section class="section active" id="inicio">
-          <div class="hero">
-            <div class="card">
-              <div class="eyebrow">Resumen</div>
-              <h2>Controla obras, tareas, documentos y presupuesto desde una sola app.</h2>
-              <p class="muted">Datos sincronizados en la nube con Supabase. Accede desde cualquier dispositivo.</p>
-            </div>
-            <div class="card soft">
-              <h3>Hoy</h3>
-              <div class="stack" id="todayStats"></div>
-            </div>
-          </div>
-          <div class="cards" style="margin-top:18px" id="kpis"></div>
-          <div class="split" style="margin-top:18px">
-            <div class="card">
-              <div class="row">
-                <div><h3>Notas rápidas</h3><div class="muted">Anotaciones internas</div></div>
-                <button class="btn primary" id="addNoteBtn">Nueva nota</button>
-              </div>
-              <div class="stack" id="notesList" style="margin-top:14px"></div>
-            </div>
-            <div class="card">
-              <div class="row">
-                <div><h3>Alertas</h3><div class="muted">Vencimientos próximos</div></div>
-                <button class="btn primary" id="addAlertBtn">Nueva alerta</button>
-              </div>
-              <div class="stack" id="alertsList" style="margin-top:14px"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="section" id="obras">
-          <div class="two">
-            <div class="card">
-              <div class="row">
-                <div>
-                  <h3>Obras</h3>
-                  <div class="muted">Seguimiento y estado actual</div>
-                </div>
-              </div>
-              <div class="toolbar" style="margin-top:14px">
-                <input id="searchInput" placeholder="Buscar obra, tarea, documento o concepto" style="flex:1;min-width:220px;padding:12px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">
-                <select id="phaseFilter" style="min-width:180px;padding:12px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">
-                  <option>Todos</option>
-                  <option>Anteproyecto</option>
-                  <option>Proyecto básico</option>
-                  <option>Licencia</option>
-                  <option>Ejecución</option>
-                </select>
-              </div>
-              <div class="list" id="projectsList" style="margin-top:14px"></div>
-            </div>
-            <div class="card">
-              <h3>Nueva Obra</h3>
-              <form class="form" id="projectForm">
-                <div><label>Nombre de la Obra</label><input id="newProjName" required placeholder="Ej. Vivienda Unifamiliar Pozuelo"></div>
-                <div><label>Cliente</label><input id="newProjClient" required placeholder="Ej. Familia R."></div>
-                <button class="btn primary" type="submit">Crear Obra</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <section class="section" id="tareas">
-          <div class="two">
-            <div class="card">
-              <div class="row">
-                <div>
-                  <h3>Tareas</h3>
-                  <div class="muted">Pendientes por obra</div>
-                </div>
-              </div>
-              <div class="stack" id="tasksList" style="margin-top:14px"></div>
-            </div>
-            <div class="card">
-              <h3>Nueva tarea</h3>
-              <form class="form" id="taskForm">
-                <div><label>Obra</label><select id="taskProject"></select></div>
-                <div><label>Título</label><input id="taskTitle" required placeholder="Ej. Enviar plano corregido"></div>
-                <div><label>Fecha</label><input id="taskDate" type="date" required></div>
-                <div><label>Prioridad</label><select id="taskPriority"><option>Normal</option><option>Alta</option><option>Urgente</option></select></div>
-                <button class="btn primary" type="submit">Guardar tarea</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <section class="section" id="economia">
-          <div class="two">
-            <div class="card">
-              <div class="row">
-                <div>
-                  <h3>Control económico</h3>
-                  <div class="muted">Ingresos, gastos y margen</div>
-                </div>
-              </div>
-              <div class="stack" id="moneyList" style="margin-top:14px"></div>
-            </div>
-            <div class="card">
-              <h3>Movimiento</h3>
-              <form class="form" id="moneyForm">
-                <div><label>Obra</label><select id="moneyProject"></select></div>
-                <div><label>Tipo</label><select id="moneyType"><option>Ingreso</option><option>Gasto</option></select></div>
-                <div><label>Concepto</label><input id="moneyConcept" required placeholder="Ej. Honorarios fase 1"></div>
-                <div><label>Importe</label><input id="moneyAmount" type="number" step="0.01" required></div>
-                <button class="btn primary" type="submit">Guardar</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <section class="section" id="documentos">
-          <div class="two">
-            <div class="card">
-              <h3>Documentos</h3>
-              <div class="stack" id="docsList" style="margin-top:14px"></div>
-            </div>
-            <div class="card">
-              <h3>Subir referencia</h3>
-              <form class="form" id="docForm">
-                <div><label>Obra</label><select id="docProject"></select></div>
-                <div><label>Nombre archivo</label><input id="docName" required placeholder="Ej. memoria-basica.pdf"></div>
-                <div><label>Tipo</label><select id="docType"><option>PDF</option><option>DWG</option><option>DOCX</option><option>IMG</option></select></div>
-                <button class="btn primary" type="submit">Guardar documento</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <section class="section" id="ajustes">
+<!-- App principal -->
+<div class="app" id="app" style="display:none;">
+  <aside class="side">
+    <div class="brand"><div class="logo">O</div><div><h1>Obra Clara Pro</h1><div class="muted" style="font-size:12px">Gestión para arquitectos</div></div></div>
+    <div class="nav">
+      <button class="active" data-go="inicio">Inicio</button>
+      <button data-go="obras">Obras</button>
+      <button data-go="tareas">Tareas</button>
+      <button data-go="economia">Economía</button>
+      <button data-go="documentos">Documentos</button>
+      <button data-go="ajustes">Ajustes</button>
+    </div>
+    <div class="sidecard">
+      <strong>Conectado</strong>
+      <div class="muted" id="userEmailDisplay">usuario@email.com</div>
+      <button class="btn secondary-neutral" style="margin-top:10px;width:100%;" id="logoutBtn">Cerrar sesión</button>
+    </div>
+  </aside>
+  <main class="main" id="contenido">
+    <div class="top">
+      <div><div class="eyebrow">SaaS con Supabase</div><h3 id="pageTitle">Inicio</h3></div>
+      <div class="toolbar"><button class="pillbtn" id="themeBtn">Tema</button></div>
+    </div>
+    <div class="grid">
+      <!-- INICIO -->
+      <section class="section active" id="inicio">
+        <div class="hero">
           <div class="card">
-            <h3>Ajustes</h3>
-            <p class="muted">Exporta, importa o borra tus datos en la nube.</p>
-            <div class="toolbar">
-              <button class="btn primary" id="exportBtn">Exportar JSON</button>
-              <label class="btn secondary-neutral" style="display:inline-flex;align-items:center;gap:8px">
-                <input id="importInput" type="file" accept="application/json" hidden>
-                Importar JSON
-              </label>
-              <button class="btn action-delete" id="resetBtn">Borrar todos mis datos</button>
-            </div>
-            <pre id="jsonPreview" style="white-space:pre-wrap;margin-top:14px;background:var(--surface2);padding:14px;border-radius:12px;border:1px solid var(--border)"></pre>
+            <div class="eyebrow">Resumen</div>
+            <h2>Controla obras, tareas, documentos y presupuesto desde una sola app.</h2>
+            <p class="muted">Datos sincronizados en la nube con Supabase. Accede desde cualquier dispositivo.</p>
           </div>
-        </section>
-
-        <div class="footer-note">Hecha para arquitectos. Datos sincronizados con Supabase.</div>
-      </div>
-
-      <nav class="mobile">
-        <button data-go="inicio" class="active" role="tab" aria-selected="true">Inicio</button>
-        <button data-go="obras" role="tab" aria-selected="false">Obras</button>
-        <button data-go="tareas" role="tab" aria-selected="false">Tareas</button>
-        <button data-go="economia" role="tab" aria-selected="false">€</button>
-      </nav>
-
-      <div class="toast" id="toast"></div>
-
-      <div id="projectModal" role="dialog" aria-modal="true">
-        <div class="card">
-          <div class="row" id="modalHeaderRow">
-            <div>
-              <h3 id="modalTitle">Detalle</h3>
-              <div class="muted" id="modalSub"></div>
-            </div>
-          </div>
-          <div id="modalBody"></div>
+          <div class="card soft"><h3>Hoy</h3><div class="stack" id="todayStats"></div></div>
         </div>
+        <div class="cards" style="margin-top:18px" id="kpis"></div>
+        <div class="split" style="margin-top:18px">
+          <div class="card">
+            <div class="row"><div><h3>Notas rápidas</h3><div class="muted">Anotaciones internas</div></div><button class="btn primary" id="addNoteBtn">Nueva nota</button></div>
+            <div class="stack" id="notesList" style="margin-top:14px"></div>
+          </div>
+          <div class="card">
+            <div class="row"><div><h3>Alertas</h3><div class="muted">Vencimientos próximos</div></div><button class="btn primary" id="addAlertBtn">Nueva alerta</button></div>
+            <div class="stack" id="alertsList" style="margin-top:14px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- OBRAS -->
+      <section class="section" id="obras">
+        <div class="two">
+          <div class="card">
+            <div class="row"><div><h3>Obras</h3><div class="muted">Seguimiento y estado actual</div></div></div>
+            <div class="toolbar" style="margin-top:14px">
+              <input id="searchInput" placeholder="Buscar obra, tarea, documento o concepto" style="flex:1;min-width:220px;padding:12px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">
+              <select id="phaseFilter" style="min-width:180px;padding:12px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">
+                <option>Todos</option><option>Anteproyecto</option><option>Proyecto básico</option><option>Licencia</option><option>Ejecución</option>
+              </select>
+            </div>
+            <div class="list" id="projectsList" style="margin-top:14px"></div>
+          </div>
+          <div class="card">
+            <h3>Nueva Obra</h3>
+            <form class="form" id="projectForm">
+              <div><label>Nombre de la Obra</label><input id="newProjName" required placeholder="Ej. Vivienda Unifamiliar Pozuelo"></div>
+              <div><label>Cliente</label><input id="newProjClient" required placeholder="Ej. Familia R."></div>
+              <button class="btn primary" type="submit">Crear Obra</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAREAS -->
+      <section class="section" id="tareas">
+        <div class="two">
+          <div class="card">
+            <div class="row"><div><h3>Tareas</h3><div class="muted">Pendientes por obra</div></div></div>
+            <div class="stack" id="tasksList" style="margin-top:14px"></div>
+          </div>
+          <div class="card">
+            <h3>Nueva tarea</h3>
+            <form class="form" id="taskForm">
+              <div><label>Obra</label><select id="taskProject"></select></div>
+              <div><label>Título</label><input id="taskTitle" required placeholder="Ej. Enviar plano corregido"></div>
+              <div><label>Fecha</label><input id="taskDate" type="date" required></div>
+              <div><label>Prioridad</label><select id="taskPriority"><option>Normal</option><option>Alta</option><option>Urgente</option></select></div>
+              <button class="btn primary" type="submit">Guardar tarea</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ECONOMÍA -->
+      <section class="section" id="economia">
+        <div class="two">
+          <div class="card">
+            <div class="row"><div><h3>Control económico</h3><div class="muted">Ingresos, gastos y margen</div></div></div>
+            <div class="stack" id="moneyList" style="margin-top:14px"></div>
+          </div>
+          <div class="card">
+            <h3>Movimiento</h3>
+            <form class="form" id="moneyForm">
+              <div><label>Obra</label><select id="moneyProject"></select></div>
+              <div><label>Tipo</label><select id="moneyType"><option>Ingreso</option><option>Gasto</option></select></div>
+              <div><label>Concepto</label><input id="moneyConcept" required placeholder="Ej. Honorarios fase 1"></div>
+              <div><label>Importe</label><input id="moneyAmount" type="number" step="0.01" required></div>
+              <button class="btn primary" type="submit">Guardar</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- DOCUMENTOS -->
+      <section class="section" id="documentos">
+        <div class="two">
+          <div class="card"><h3>Documentos</h3><div class="stack" id="docsList" style="margin-top:14px"></div></div>
+          <div class="card">
+            <h3>Subir referencia</h3>
+            <form class="form" id="docForm">
+              <div><label>Obra</label><select id="docProject"></select></div>
+              <div><label>Nombre archivo</label><input id="docName" required placeholder="Ej. memoria-basica.pdf"></div>
+              <div><label>Tipo</label><select id="docType"><option>PDF</option><option>DWG</option><option>DOCX</option><option>IMG</option></select></div>
+              <button class="btn primary" type="submit">Guardar documento</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- AJUSTES -->
+      <section class="section" id="ajustes">
+        <div class="card">
+          <h3>Ajustes</h3>
+          <p class="muted">Exporta, importa o borra tus datos en la nube.</p>
+          <div class="toolbar">
+            <button class="btn primary" id="exportBtn">Exportar JSON</button>
+            <label class="btn secondary-neutral" style="display:inline-flex;align-items:center;gap:8px">
+              <input id="importInput" type="file" accept="application/json" hidden> Importar JSON
+            </label>
+            <button class="btn action-delete" id="resetBtn">Borrar todos mis datos</button>
+          </div>
+          <pre id="jsonPreview" style="white-space:pre-wrap;margin-top:14px;background:var(--surface2);padding:14px;border-radius:12px;border:1px solid var(--border)"></pre>
+        </div>
+      </section>
+
+      <div class="footer-note">Hecha para arquitectos. Datos sincronizados con Supabase.</div>
+    </div>
+
+    <nav class="mobile">
+      <button data-go="inicio" class="active">Inicio</button>
+      <button data-go="obras">Obras</button>
+      <button data-go="tareas">Tareas</button>
+      <button data-go="economia">€</button>
+    </nav>
+
+    <div class="toast" id="toast"></div>
+
+    <div id="projectModal">
+      <div class="card">
+        <div class="row" id="modalHeaderRow"><div><h3 id="modalTitle">Detalle</h3><div class="muted" id="modalSub"></div></div></div>
+        <div id="modalBody"></div>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
+</div>
 
-  <script>
-    // ============================================
-    // CONFIGURACIÓN DE SUPABASE
-    // ============================================
-    const SUPABASE_URL = 'https://fatrjeaannlorctlvqxb.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdHJqZWFhbG5sb3JjdGx2cXhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0OTAzMjIsImV4cCI6MjEwMDA2NjMyMn0._BeajzkvD28ECBlNdq65HCQWuA4gKrGtrUt-V8mlVxc';
+<script>
+// ============================================================
+// CONFIGURACIÓN DE SUPABASE (¡Cambia esto si quieres!)
+// ============================================================
+const SUPABASE_URL = 'https://fatrjeaannlorctlvqxb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdHJqZWFhbG5sb3JjdGx2cXhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0OTAzMjIsImV4cCI6MjEwMDA2NjMyMn0._BeajzkvD28ECBlNdq65HCQWuA4gKrGtrUt-V8mlVxc';
 
-    // ============================================
-    // ESTADO GLOBAL
-    // ============================================
-    let state = {
-      projects: [],
-      tasks: [],
-      money: [],
-      docs: [],
-      notes: [],
-      alerts: []
-    };
-    let currentUser = null;
-    let supabase = null;
+// ============================================================
+// VARIABLES GLOBALES
+// ============================================================
+let state = { projects: [], tasks: [], money: [], docs: [], notes: [], alerts: [] };
+let currentUser = null;
+let supabase = null;
 
-    // ============================================
-    // SEED DATA (para cuando no hay datos)
-    // ============================================
-    const seed = {
-      projects: [
-        { id: 1, name: 'Rehabilitación Chamberí', client: 'Inversora Luma', phase: 'Ejecución', status: 'En plazo', budget: 120000, spent: 76000, notes: 'Visita de obra completada.' },
-        { id: 2, name: 'Local comercial Salamanca', client: 'Benta Studio', phase: 'Licencia', status: 'Bloqueado', budget: 45000, spent: 9000, notes: 'Falta respuesta municipal.' },
-        { id: 3, name: 'Vivienda unifamiliar Pozuelo', client: 'Familia R.', phase: 'Proyecto básico', status: 'Urgente', budget: 98000, spent: 22000, notes: 'Cerrar memoria y plano de instalaciones.' }
-      ],
-      tasks: [
-        { id: 1, projectId: 1, title: 'Subir acta de visita', date: '2026-07-19', priority: 'Alta', done: false },
-        { id: 2, projectId: 2, title: 'Enviar plano corregido', date: '2026-07-20', priority: 'Urgente', done: false }
-      ],
-      money: [
-        { id: 1, projectId: 1, type: 'Ingreso', concept: 'Honorarios fase 2', amount: 18000, date: '2026-07-18' },
-        { id: 2, projectId: 1, type: 'Gasto', concept: 'Industrial estructura', amount: 5200, date: '2026-07-17' }
-      ],
-      docs: [
-        { id: 1, projectId: 3, name: 'memoria-basica.pdf', type: 'PDF', date: '2026-07-19' },
-        { id: 2, projectId: 1, name: 'plano-distribucion.dwg', type: 'DWG', date: '2026-07-18' }
-      ],
-      notes: [
-        { id: 1, projectId: 1, title: 'Revisar mediciones estructurales', body: 'Antes de cerrar el presupuesto a finales de mes con el calculista.', date: '2026-07-19', docId: 1 }
-      ],
-      alerts: [
-        { id: 1, text: 'Entregar documentación de Pozuelo', date: '2026-07-23' }
-      ]
-    };
+// ============================================================
+// AUXILIARES
+// ============================================================
+function $(id) { return document.querySelector(id); }
+function $$(sel) { return document.querySelectorAll(sel); }
 
-    // ============================================
-    // FUNCIONES AUXILIARES
-    // ============================================
-    const $ = s => document.querySelector(s);
-    const fmt = n => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(n);
+function toast(msg) {
+  const t = $('#toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toast);
+  window.__toast = setTimeout(() => t.classList.remove('show'), 2000);
+}
 
-    function toast(msg) {
-      const t = $('#toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      clearTimeout(window.__toast);
-      window.__toast = setTimeout(() => t.classList.remove('show'), 2000);
+function getToday() {
+  const d = new Date();
+  const offset = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - (offset * 60 * 1000));
+  return local.toISOString().slice(0, 10);
+}
+
+function fmt(n) { return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(n); }
+
+function projectName(id) {
+  const p = state.projects.find(x => x.id == id);
+  return p ? p.name : '—';
+}
+
+function statusBadge(s) {
+  const c = s === 'En plazo' ? 'good' : s === 'Bloqueado' ? 'warn' : 'bad';
+  return `<span class="badge ${c}">${s}</span>`;
+}
+
+function projectProgress(p) {
+  const budget = Number(p.budget) || 0;
+  const spent = Number(p.spent) || 0;
+  const pct = budget ? Math.max(0, Math.min(100, Math.round((spent / budget) * 100))) : 0;
+  return `<div style="margin-top:8px;height:10px;background:var(--surface2);border-radius:999px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--primary)"></div></div><div class="meta"><span>${pct}% ejecutado</span><span>${fmt(spent)} / ${fmt(budget)}</span></div>`;
+}
+
+function syncProjectExpenses() {
+  state.projects.forEach(p => {
+    p.spent = state.money.filter(m => m.project_id === p.id && m.type === 'Gasto').reduce((sum, m) => sum + (Number(m.amount) || 0), 0);
+  });
+}
+
+// ============================================================
+// INICIALIZAR SUPABASE
+// ============================================================
+async function initSupabase() {
+  try {
+    if (typeof window.supabase === 'undefined') {
+      toast('Error: Supabase no se cargó. Recarga la página.');
+      return null;
     }
-
-    function getLocalDateString() {
-      const d = new Date();
-      const offset = d.getTimezoneOffset();
-      const local = new Date(d.getTime() - (offset * 60 * 1000));
-      return local.toISOString().slice(0, 10);
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      currentUser = data.session.user;
     }
-
-    function projectName(id) {
-      return (state.projects.find(p => p.id == id) || {}).name || '—';
-    }
-
-    function statusBadge(s) {
-      const c = s === 'En plazo' ? 'good' : s === 'Bloqueado' ? 'warn' : 'bad';
-      return `<span class="badge ${c}">${s}</span>`;
-    }
-
-    function projectProgress(p) {
-      const budget = Number(p.budget) || 0;
-      const spent = Number(p.spent) || 0;
-      const pct = Math.max(0, Math.min(100, budget ? Math.round((spent / budget) * 100) : 0));
-      return `<div style="margin-top:8px;height:10px;background:var(--surface2);border-radius:999px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--primary)"></div></div><div class="meta" style="margin-bottom:4px"><span>${pct}% ejecutado</span><span>${fmt(spent)} / ${fmt(budget)}</span></div>`;
-    }
-
-    function scrollTopSmooth() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // ============================================
-    // INICIALIZAR SUPABASE
-    // ============================================
-    async function initSupabase() {
-      try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Comprobar sesión existente
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          currentUser = data.session.user;
-        }
-        
-        // Escuchar cambios en autenticación
-        supabase.auth.onAuthStateChange((event, session) => {
-          if (event === 'SIGNED_IN' && session) {
-            currentUser = session.user;
-            showApp();
-            loadUserData().then(render);
-            toast('Sesión iniciada');
-          } else if (event === 'SIGNED_OUT') {
-            currentUser = null;
-            state = { projects: [], tasks: [], money: [], docs: [], notes: [], alerts: [] };
-            showLoginScreen();
-            toast('Sesión cerrada');
-          }
-        });
-        
-        return supabase;
-      } catch (error) {
-        console.error('Error al inicializar Supabase:', error);
-        toast('Error de conexión con Supabase');
-        return null;
-      }
-    }
-
-    // ============================================
-    // AUTENTICACIÓN
-    // ============================================
-    async function login(email, password) {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        currentUser = data.user;
-        return { success: true };
-      } catch (error) {
-        toast('Error al iniciar sesión: ' + error.message);
-        return { success: false, error: error.message };
-      }
-    }
-
-    async function register(email, password) {
-      try {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin }
-        });
-        if (error) throw error;
-        if (data.user) {
-          toast('Cuenta creada. Revisa tu email para confirmar.');
-        }
-        return { success: true };
-      } catch (error) {
-        toast('Error al registrar: ' + error.message);
-        return { success: false, error: error.message };
-      }
-    }
-
-    async function logout() {
-      try {
-        await supabase.auth.signOut();
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        currentUser = session.user;
+        showApp();
+        loadUserData().then(render);
+        toast('Sesión iniciada');
+      } else if (event === 'SIGNED_OUT') {
         currentUser = null;
         state = { projects: [], tasks: [], money: [], docs: [], notes: [], alerts: [] };
         showLoginScreen();
         toast('Sesión cerrada');
-        return { success: true };
-      } catch (error) {
-        toast('Error al cerrar sesión: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    // ============================================
-    // MOSTRAR/OCULTAR PANTALLAS
-    // ============================================
-    function showLoginScreen() {
-      $('#loginScreen').style.display = 'flex';
-      $('#app').style.display = 'none';
-    }
-
-    function showApp() {
-      $('#loginScreen').style.display = 'none';
-      $('#app').style.display = 'grid';
-      if (currentUser) {
-        $('#userEmailDisplay').textContent = currentUser.email;
-      }
-    }
-
-    // ============================================
-    // CRUD - PROYECTOS
-    // ============================================
-    async function createProject(name, client) {
-      if (!currentUser) return { success: false };
-      try {
-        const { data, error } = await supabase
-          .from('projects')
-          .insert([{
-            user_id: currentUser.id,
-            name: name.trim(),
-            client: client.trim(),
-            phase: 'Anteproyecto',
-            status: 'En plazo',
-            budget: 0,
-            notes: 'Nueva obra creada.'
-          }])
-          .select();
-        if (error) throw error;
-        if (data && data.length > 0) {
-          state.projects.unshift(data[0]);
-          render();
-          toast('Obra creada');
-          return { success: true, data: data[0] };
-        }
-        return { success: false };
-      } catch (error) {
-        toast('Error al crear obra: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function updateProject(id, updates) {
-      if (!currentUser) return { success: false };
-      try {
-        const { data, error } = await supabase
-          .from('projects')
-          .update(updates)
-          .eq('id', id)
-          .eq('user_id', currentUser.id)
-          .select();
-        if (error) throw error;
-        if (data && data.length > 0) {
-          const idx = state.projects.findIndex(p => p.id === id);
-          if (idx !== -1) state.projects[idx] = data[0];
-          render();
-          toast('Obra actualizada');
-          return { success: true, data: data[0] };
-        }
-        return { success: false };
-      } catch (error) {
-        toast('Error al actualizar obra: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function deleteProject(id) {
-      if (!currentUser) return { success: false };
-      try {
-        const project = state.projects.find(p => p.id === id);
-        const name = project ? project.name : 'Obra';
-        const { error } = await supabase
-          .from('projects')
-          .delete()
-          .eq('id', id)
-          .eq('user_id', currentUser.id);
-        if (error) throw error;
-        state.projects = state.projects.filter(p => p.id !== id);
-        state.tasks = state.tasks.filter(t => t.project_id !== id);
-        state.money = state.money.filter(m => m.project_id !== id);
-        state.docs = state.docs.filter(d => d.project_id !== id);
-        state.notes = state.notes.filter(n => n.project_id !== id);
-        render();
-        toast(`"${name}" eliminada`);
-        return { success: true };
-      } catch (error) {
-        toast('Error al eliminar obra: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    // ============================================
-    // CRUD - TAREAS
-    // ============================================
-    async function createTask(projectId, title, date, priority = 'Normal') {
-      if (!currentUser) return { success: false };
-      try {
-        const { data, error } = await supabase
-          .from('tasks')
-          .insert([{
-            user_id: currentUser.id,
-            project_id: projectId,
-            title: title.trim(),
-            date: date,
-            priority: priority,
-            done: false
-          }])
-          .select();
-        if (error) throw error;
-        if (data && data.length > 0) {
-          state.tasks.unshift(data[0]);
-          render();
-          toast('Tarea creada');
-          return { success: true, data: data[0] };
-        }
-        return { success: false };
-      } catch (error) {
-        toast('Error al crear tarea: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function updateTask(id, updates) {
-      if (!currentUser) return { success: false };
-      try {
-        const { data, error } = await supabase
-          .from('tasks')
-          .update(updates)
-          .eq('id', id)
-          .eq('user_id', currentUser.id)
-          .select();
-        if (error) throw error;
-        if (data && data.length > 0) {
-          const idx = state.tasks.findIndex(t => t.id === id);
-          if (idx !== -1) state.tasks[idx] = data[0];
-          render();
-          toast('Tarea actualizada');
-          return { success: true, data: data[0] };
-        }
-        return { success: false };
-      } catch (error) {
-        toast('Error al actualizar tarea: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function deleteTask(id) {
-      if (!currentUser) return { success: false };
-      try {
-        const { error } = await supabase
-          .from('tasks')
-          .delete()
-          .eq('id', id)
-          .eq('user_id', currentUser.id);
-        if (error) throw error;
-        state.tasks = state.tasks.filter(t => t.id !== id);
-        render();
-        toast('Tarea eliminada');
-        return { success: true };
-      } catch (error) {
-        toast('Error al eliminar tarea: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function toggleTaskDone(id, done) {
-      return await updateTask(id, { done: done });
-    }
-
-    // ============================================
-    // CRUD - MOVIMIENTOS ECONÓMICOS
-    // ============================================
-    async function createMoney(projectId, type, concept, amount) {
-      if (!currentUser) return { success: false };
-      if (amount < 0) {
-        toast('El importe debe ser positivo');
-        return { success: false };
-      }
-      try {
-        const { data, error } = await supabase
-          .from('money')
-          .insert([{
-            user_id: currentUser.id,
-            project_id: projectId,
-            type: type,
-            concept: concept.trim(),
-            amount: amount,
-            date: getLocalDateString()
-          }])
-          .select();
-        if (error) throw error;
-        if (data && data.length > 0) {
-          state.money.unshift(data[0]);
-          syncProjectExpenses();
-          render();
-          toast('Movimiento registrado');
-          return { success: true, data: data[0] };
-        }
-        return { success: false };
-      } catch (error) {
-        toast('Error al registrar movimiento: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function updateMoney(id, updates) {
-      if (!currentUser) return { success: false };
-      try {
-        const { data, error } = await supabase
-          .from('money')
-          .update(updates)
-          .eq('id', id)
-          .eq('user_id', currentUser.id)
-          .select();
-        if (error) throw error;
-        if (data && data.length > 0) {
-          const idx = state.money.findIndex(m => m.id === id);
-          if (idx !== -1) state.money[idx] = data[0];
-          syncProjectExpenses();
-          render();
-          toast('Movimiento actualizado');
-          return { success: true, data: data[0] };
-        }
-        return { success: false };
-      } catch (error) {
-        toast('Error al actualizar movimiento: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function deleteMoney(id) {
-      if (!currentUser) return { success: false };
-      try {
-        const { error } = await supabase
-          .from('money')
-          .delete()
-          .eq('id', id)
-          .eq('user_id', currentUser.id);
-        if (error) throw error;
-        state.money = state.money.filter(m => m.id !== id);
-        syncProjectExpenses();
-        render();
-        toast('Movimiento eliminado');
-        return { success: true };
-      } catch (error) {
-        toast('Error al eliminar movimiento: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    // ============================================
-    // CRUD - DOCUMENTOS
-    // ============================================
-    async function createDoc(projectId, name, type) {
-      if (!currentUser) return { success: false };
-      try {
-        const { data, error } = await supabase
-          .from('docs')
-          .insert([{
-            user_id: currentUser.id,
-            project_id: projectId,
-            name: name.trim(),
-            type: type,
-            date: getLocalDateString()
-          }])
-          .select();
-        if (error) throw error;
-        if (data && data.length > 0) {
-          state.docs.unshift(data[0]);
-          render();
-          toast('Documento guardado');
-          return { success: true, data: data[0] };
-        }
-        return { success: false };
-      } catch (error) {
-        toast('Error al guardar documento: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function updateDoc(id, updates) {
-      if (!currentUser) return { success: false };
-      try {
-        const { data, error } = await supabase
-          .from('docs')
-          .update(updates)
-          .eq('id', id)
-          .eq('user_id', currentUser.id)
-          .select();
-        if (error) throw error;
-        if (data && data.length > 0) {
-          const idx = state.docs.findIndex(d => d.id === id);
-          if (idx !== -1) state.docs[idx] = data[0];
-          render();
-          toast('Documento actualizado');
-          return { success: true, data: data[0] };
-        }
-        return { success: false };
-      } catch (error) {
-        toast('Error al actualizar documento: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function deleteDoc(id) {
-      if (!currentUser) return { success: false };
-      try {
-        const { error } = await supabase
-          .from('docs')
-          .delete()
-          .eq('id', id)
-          .eq('user_id', currentUser.id);
-        if (error) throw error;
-        state.docs = state.docs.filter(d => d.id !== id);
-        render();
-        toast('Documento eliminado');
-        return { success: true };
-      } catch (error) {
-        toast('Error al eliminar documento: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    // ============================================
-    // CRUD - NOTAS
-    // ============================================
-    async function createNote(title, body, docId = null, projectId = null) {
-      if (!currentUser) return { success: false };
-      try {
-        const { data, error } = await supabase
-          .from('notes')
-          .insert([{
-            user_id: currentUser.id,
-            project_id: projectId,
-            title: title.trim(),
-            body: body.trim() || 'Sin contenido',
-            date: getLocalDateString(),
-            doc_id: docId
-          }])
-          .select();
-        if (error) throw error;
-        if (data && data.length > 0) {
-          state.notes.unshift(data[0]);
-          render();
-          toast('Nota guardada');
-          return { success: true, data: data[0] };
-        }
-        return { success: false };
-      } catch (error) {
-        toast('Error al guardar nota: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function deleteNote(id) {
-      if (!currentUser) return { success: false };
-      try {
-        const { error } = await supabase
-          .from('notes')
-          .delete()
-          .eq('id', id)
-          .eq('user_id', currentUser.id);
-        if (error) throw error;
-        state.notes = state.notes.filter(n => n.id !== id);
-        render();
-        toast('Nota eliminada');
-        return { success: true };
-      } catch (error) {
-        toast('Error al eliminar nota: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    // ============================================
-    // CRUD - ALERTAS
-    // ============================================
-    async function createAlert(text, date) {
-      if (!currentUser) return { success: false };
-      try {
-        const { data, error } = await supabase
-          .from('alerts')
-          .insert([{
-            user_id: currentUser.id,
-            text: text.trim(),
-            date: date
-          }])
-          .select();
-        if (error) throw error;
-        if (data && data.length > 0) {
-          state.alerts.unshift(data[0]);
-          render();
-          toast('Alerta creada');
-          return { success: true, data: data[0] };
-        }
-        return { success: false };
-      } catch (error) {
-        toast('Error al crear alerta: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    async function deleteAlert(id) {
-      if (!currentUser) return { success: false };
-      try {
-        const { error } = await supabase
-          .from('alerts')
-          .delete()
-          .eq('id', id)
-          .eq('user_id', currentUser.id);
-        if (error) throw error;
-        state.alerts = state.alerts.filter(a => a.id !== id);
-        render();
-        toast('Alerta eliminada');
-        return { success: true };
-      } catch (error) {
-        toast('Error al eliminar alerta: ' + error.message);
-        return { success: false };
-      }
-    }
-
-    // ============================================
-    // CARGA DE DATOS DEL USUARIO
-    // ============================================
-    async function loadUserData() {
-      if (!currentUser) return;
-      try {
-        const userId = currentUser.id;
-        const [projectsRes, tasksRes, moneyRes, docsRes, notesRes, alertsRes] = await Promise.all([
-          supabase.from('projects').select('*').eq('user_id', userId),
-          supabase.from('tasks').select('*').eq('user_id', userId),
-          supabase.from('money').select('*').eq('user_id', userId),
-          supabase.from('docs').select('*').eq('user_id', userId),
-          supabase.from('notes').select('*').eq('user_id', userId),
-          supabase.from('alerts').select('*').eq('user_id', userId)
-        ]);
-        state.projects = projectsRes.data || [];
-        state.tasks = tasksRes.data || [];
-        state.money = moneyRes.data || [];
-        state.docs = docsRes.data || [];
-        state.notes = notesRes.data || [];
-        state.alerts = alertsRes.data || [];
-        syncProjectExpenses();
-        return true;
-      } catch (error) {
-        console.error('Error al cargar datos:', error);
-        toast('Error al cargar datos');
-        return false;
-      }
-    }
-
-    function syncProjectExpenses() {
-      state.projects.forEach(p => {
-        p.spent = state.money
-          .filter(m => m.project_id === p.id && m.type === 'Gasto')
-          .reduce((sum, m) => sum + (Number(m.amount) || 0), 0);
-      });
-    }
-
-    // ============================================
-    // EXPORTAR E IMPORTAR
-    // ============================================
-    function exportData() {
-      const data = {
-        user: currentUser.email,
-        exportedAt: new Date().toISOString(),
-        projects: state.projects,
-        tasks: state.tasks,
-        money: state.money,
-        docs: state.docs,
-        notes: state.notes,
-        alerts: state.alerts
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `obra-clara-pro-${getLocalDateString()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast('Datos exportados');
-    }
-
-    async function importData(file) {
-      try {
-        const text = await file.text();
-        const data = JSON.parse(text);
-        if (!data.projects || !Array.isArray(data.projects)) {
-          toast('JSON inválido');
-          return;
-        }
-        if (!confirm('¿Sobrescribir todos tus datos actuales?')) return;
-        
-        // Eliminar datos actuales
-        await supabase.from('projects').delete().eq('user_id', currentUser.id);
-        await supabase.from('tasks').delete().eq('user_id', currentUser.id);
-        await supabase.from('money').delete().eq('user_id', currentUser.id);
-        await supabase.from('docs').delete().eq('user_id', currentUser.id);
-        await supabase.from('notes').delete().eq('user_id', currentUser.id);
-        await supabase.from('alerts').delete().eq('user_id', currentUser.id);
-        
-        // Insertar proyectos
-        for (const p of data.projects) {
-          await createProject(p.name, p.client || '');
-        }
-        await loadUserData();
-        render();
-        toast('Datos importados');
-      } catch (error) {
-        toast('Error al importar: ' + error.message);
-      }
-    }
-
-    // ============================================
-    // RENDERIZADO
-    // ============================================
-    function renderOptions() {
-      const options = state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-      ['taskProject', 'moneyProject', 'docProject'].forEach(id => {
-        const el = $(`#${id}`);
-        if (el) el.innerHTML = options;
-      });
-    }
-
-    function setSection(id) {
-      document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === id));
-      document.querySelectorAll('[data-go]').forEach(b => b.classList.toggle('active', b.dataset.go === id));
-      $('#pageTitle').textContent = id.charAt(0).toUpperCase() + id.slice(1);
-      scrollTopSmooth();
-    }
-
-    function calcStats() {
-      const income = state.money.filter(m => m.type === 'Ingreso').reduce((sum, m) => sum + (Number(m.amount) || 0), 0);
-      const expense = state.money.filter(m => m.type === 'Gasto').reduce((sum, m) => sum + (Number(m.amount) || 0), 0);
-      return {
-        income,
-        expense,
-        margin: income - expense,
-        openTasks: state.tasks.filter(t => !t.done).length,
-        urgent: state.projects.filter(p => p.status === 'Urgente').length,
-        overBudget: state.projects.filter(p => Number(p.budget) > 0 && (Number(p.spent) || 0) > Number(p.budget)).length
-      };
-    }
-
-    function render() {
-      const q = ($('#searchInput')?.value || '').toLowerCase();
-      const phase = ($('#phaseFilter')?.value || 'Todos');
-      
-      // KPIs
-      const k = calcStats();
-      $('#kpis').innerHTML = [
-        ['Obras activas', state.projects.length],
-        ['Tareas abiertas', k.openTasks],
-        ['Docs', state.docs.length],
-        ['Presupuestos superados', k.overBudget]
-      ].map(([a, b]) => `<div class="card kpi"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('');
-
-      // Hoy
-      $('#todayStats').innerHTML = [
-        ['Visitas', state.tasks.filter(t => t.date === getLocalDateString()).length],
-        ['Obras críticas', k.urgent],
-        ['Alertas', state.alerts.length]
-      ].map(([a, b]) => `<div class="item"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('');
-
-      // Proyectos
-      const filteredProjects = state.projects.filter(p =>
-        `${p.name} ${p.client} ${p.phase} ${p.status} ${p.notes}`.toLowerCase().includes(q) &&
-        (phase === 'Todos' || p.phase === phase)
-      );
-      $('#projectsList').innerHTML = filteredProjects.map(p => `
-        <div class="item">
-          <div class="row">
-            <div>
-              <strong>${p.name}</strong>
-              <div class="meta"><span>${p.client}</span><span>${p.phase}</span><span>${p.budget ? fmt(p.budget) : 'Sin presupuesto'}</span></div>
-            </div>
-            <div>${statusBadge(p.status)}</div>
-          </div>
-          <div class="muted" style="margin-top:4px">${p.notes}</div>
-          ${projectProgress(p)}
-          <div class="card-actions-centered">
-            <button class="btn action-view" data-view-project="${p.id}">Ver</button>
-            <button class="btn action-edit" data-edit-project="${p.id}">Editar</button>
-            <button class="btn action-delete" data-trigger-del="project" data-id="${p.id}">Borrar</button>
-          </div>
-        </div>
-      `).join('') || '<div class="item">Sin resultados</div>';
-
-      // Tareas
-      $('#tasksList').innerHTML = state.tasks.filter(t =>
-        `${t.title} ${projectName(t.project_id)} ${t.priority}`.toLowerCase().includes(q)
-      ).map(t => `
-        <div class="item">
-          <div class="row">
-            <div>
-              <strong>${t.title}</strong>
-              <div class="meta"><span>${projectName(t.project_id)}</span><span>${t.date}</span></div>
-            </div>
-            <div><span class="badge ${t.priority === 'Urgente' ? 'bad' : t.priority === 'Alta' ? 'warn' : 'good'}">${t.priority}</span></div>
-          </div>
-          <label class="meta" style="margin-top:4px">
-            <input class="check" type="checkbox" data-task-done="${t.id}" ${t.done ? 'checked' : ''}> 
-            ${t.done ? 'Completada' : 'Pendiente'}
-          </label>
-          <div class="card-actions-centered">
-            <button class="btn action-edit" data-edit-task="${t.id}">Editar</button>
-            <button class="btn action-delete" data-trigger-del="task" data-id="${t.id}">Borrar</button>
-          </div>
-        </div>
-      `).join('') || '<div class="item">Sin tareas</div>';
-
-      // Movimientos
-      $('#moneyList').innerHTML = state.money.filter(m =>
-        `${m.concept} ${projectName(m.project_id)} ${m.type}`.toLowerCase().includes(q)
-      ).map(m => `
-        <div class="item">
-          <div class="row">
-            <div>
-              <strong>${m.concept}</strong>
-              <div class="meta"><span>${projectName(m.project_id)}</span><span>${m.date}</span></div>
-            </div>
-            <div><strong style="color:var(${m.type === 'Ingreso' ? '--good' : '--bad'})">${m.type === 'Ingreso' ? '+' : '-'}${fmt(m.amount)}</strong></div>
-          </div>
-          <div class="card-actions-centered">
-            <button class="btn action-edit" data-edit-money="${m.id}">Editar</button>
-            <button class="btn action-delete" data-trigger-del="money" data-id="${m.id}">Borrar</button>
-          </div>
-        </div>
-      `).join('') || '<div class="item">Sin movimientos</div>';
-
-      // Documentos
-      $('#docsList').innerHTML = state.docs.filter(d =>
-        `${d.name} ${projectName(d.project_id)} ${d.type}`.toLowerCase().includes(q)
-      ).map(d => `
-        <div class="item">
-          <div class="row">
-            <div>
-              <strong>${d.name}</strong>
-              <div class="meta"><span>${projectName(d.project_id)}</span><span>${d.type}</span></div>
-            </div>
-            <div><span class="badge info">📎 Guardado</span></div>
-          </div>
-          <div class="card-actions-centered">
-            <button class="btn action-edit" data-edit-doc="${d.id}">Editar</button>
-            <button class="btn action-delete" data-trigger-del="doc" data-id="${d.id}">Borrar</button>
-          </div>
-        </div>
-      `).join('') || '<div class="item">Sin documentos</div>';
-
-      // Notas
-      $('#notesList').innerHTML = (state.notes || []).map(n => {
-        const hasDoc = n.doc_id ? `<span class="badge info" style="padding:2px 6px;font-size:10px;">📎 Archivo</span>` : '';
-        return `
-          <div class="item">
-            <div class="row">
-              <div>
-                <strong>${n.title}</strong> ${hasDoc}
-                ${n.project_id ? `<div class="meta">${projectName(n.project_id)}</div>` : ''}
-              </div>
-              <div style="display:flex;gap:6px;">
-                <button class="btn action-view" data-view-note="${n.id}">Ver</button>
-                <button class="btn action-delete" data-trigger-del="note" data-id="${n.id}">Borrar</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('') || '<div class="item">Sin notas</div>';
-
-      // Alertas
-      $('#alertsList').innerHTML = (state.alerts || []).map(a => `
-        <div class="item">
-          <div class="row">
-            <div>
-              <strong>${a.text}</strong>
-              <div class="muted">${a.date}</div>
-            </div>
-            <button class="btn action-delete" data-trigger-del="alert" data-id="${a.id}">Borrar</button>
-          </div>
-        </div>
-      `).join('') || '<div class="item">Sin alertas</div>';
-
-      renderOptions();
-      $('#jsonPreview').textContent = JSON.stringify(state, null, 2);
-    }
-
-    // ============================================
-    // MODALES
-    // ============================================
-    function openConfirmDeleteModal(type, id) {
-      let name = '';
-      switch(type) {
-        case 'project': name = (state.projects.find(p => p.id === id) || {}).name || 'Obra'; break;
-        case 'task': name = (state.tasks.find(t => t.id === id) || {}).title || 'Tarea'; break;
-        case 'money': name = (state.money.find(m => m.id === id) || {}).concept || 'Movimiento'; break;
-        case 'doc': name = (state.docs.find(d => d.id === id) || {}).name || 'Documento'; break;
-        case 'note': name = (state.notes.find(n => n.id === id) || {}).title || 'Nota'; break;
-        case 'alert': name = (state.alerts.find(a => a.id === id) || {}).text || 'Alerta'; break;
-      }
-      const message = type === 'project' 
-        ? `¡Atención! Al eliminar "${name}" se borrarán todas sus tareas, documentos y movimientos asociados.`
-        : `¿Eliminar "${name}" permanentemente?`;
-      
-      $('#modalHeaderRow').innerHTML = `
-        <div>
-          <h3>Confirmar eliminación</h3>
-          <div class="muted">Acción irreversible</div>
-        </div>
-      `;
-      $('#modalBody').innerHTML = `
-        <div class="item" style="background:color-mix(in srgb, var(--bad) 8%, transparent);border-color:var(--bad);padding:16px;text-align:center;">${message}</div>
-        <div class="card-actions-centered" style="margin-top:20px;gap:16px;">
-          <button class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
-          <button class="btn action-delete" id="confirmDeleteBtn">Eliminar</button>
-        </div>
-      `;
-      $('#confirmDeleteBtn').onclick = async () => {
-        $('#projectModal').style.display = 'none';
-        switch(type) {
-          case 'project': await deleteProject(id); break;
-          case 'task': await deleteTask(id); break;
-          case 'money': await deleteMoney(id); break;
-          case 'doc': await deleteDoc(id); break;
-          case 'note': await deleteNote(id); break;
-          case 'alert': await deleteAlert(id); break;
-        }
-      };
-      $('#projectModal').style.display = 'flex';
-    }
-
-    function openProjectModal(id) {
-      const p = state.projects.find(x => x.id == id);
-      if (!p) return;
-      $('#modalHeaderRow').innerHTML = `<div><h3>Detalle de obra</h3><div class="muted">${p.name} · ${p.client}</div></div>`;
-      const pt = state.tasks.filter(t => t.project_id == id);
-      const pm = state.money.filter(m => m.project_id == id);
-      const pd = state.docs.filter(d => d.project_id == id);
-      $('#modalBody').innerHTML = `
-        <div class="split">
-          <div>
-            <h3 style="font-size:16px;margin-bottom:8px">Tareas</h3>
-            ${pt.map(t => `<div class="item"><strong>${t.title}</strong><div class="meta"><span>${t.date}</span><span class="badge ${t.priority === 'Urgente' ? 'bad' : t.priority === 'Alta' ? 'warn' : 'good'}">${t.priority}</span></div></div>`).join('') || '<div class="item">Sin tareas</div>'}
-          </div>
-          <div>
-            <h3 style="font-size:16px;margin-bottom:8px">Documentos</h3>
-            ${pd.map(d => `<div class="item"><strong>${d.name}</strong><div class="meta"><span>${d.type}</span><span>${d.date}</span></div></div>`).join('') || '<div class="item">Sin documentos</div>'}
-          </div>
-        </div>
-        <div style="margin-top:14px">
-          <h3 style="font-size:16px;margin-bottom:8px">Economía</h3>
-          ${pm.map(m => `<div class="item"><div class="row"><strong>${m.concept}</strong><strong style="color:var(${m.type === 'Ingreso' ? '--good' : '--bad'})">${m.type === 'Ingreso' ? '+' : '-'}${fmt(m.amount)}</strong></div></div>`).join('') || '<div class="item">Sin movimientos</div>'}
-        </div>
-        <div class="card-actions-centered" style="margin-top:20px;">
-          <button class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cerrar</button>
-        </div>
-      `;
-      $('#projectModal').style.display = 'flex';
-    }
-
-    function openNoteViewModal(id) {
-      const n = state.notes.find(x => x.id == id);
-      if (!n) return;
-      $('#modalHeaderRow').innerHTML = `<div><h3>${n.title}</h3><div class="muted">Creada el ${n.date || '—'}</div></div>`;
-      let docHtml = '';
-      if (n.doc_id) {
-        const d = state.docs.find(x => x.id == n.doc_id);
-        if (d) {
-          docHtml = `<div style="margin-top:14px;"><h3 style="font-size:14px;margin-bottom:6px;">Documento vinculado:</h3><div class="badge info" style="font-size:13px;padding:6px 12px;border-radius:8px;">📎 ${d.name} (${d.type})</div></div>`;
-        }
-      }
-      $('#modalBody').innerHTML = `
-        <div class="item" style="background:var(--surface2);padding:16px;white-space:pre-wrap;font-size:15px;border:1px solid var(--border)">${n.body || '<span class="muted">Sin contenido</span>'}</div>
-        ${docHtml}
-        <div class="card-actions-centered" style="margin-top:20px;">
-          <button class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cerrar</button>
-        </div>
-      `;
-      $('#projectModal').style.display = 'flex';
-    }
-
-    function openEditProjectModal(id) {
-      const p = state.projects.find(x => x.id == id);
-      if (!p) return;
-      $('#modalHeaderRow').innerHTML = `<div><h3>Editar Obra</h3><div class="muted">${p.name}</div></div>`;
-      $('#modalBody').innerHTML = `
-        <form class="form" id="editProjectForm">
-          <div><label>Nombre</label><input id="editProjName" value="${p.name}" required></div>
-          <div><label>Cliente</label><input id="editProjClient" value="${p.client || ''}" required></div>
-          <div class="split">
-            <div><label>Fase</label><select id="editProjPhase"><option ${p.phase === 'Anteproyecto' ? 'selected' : ''}>Anteproyecto</option><option ${p.phase === 'Proyecto básico' ? 'selected' : ''}>Proyecto básico</option><option ${p.phase === 'Licencia' ? 'selected' : ''}>Licencia</option><option ${p.phase === 'Ejecución' ? 'selected' : ''}>Ejecución</option></select></div>
-            <div><label>Estado</label><select id="editProjStatus"><option ${p.status === 'En plazo' ? 'selected' : ''}>En plazo</option><option ${p.status === 'Bloqueado' ? 'selected' : ''}>Bloqueado</option><option ${p.status === 'Urgente' ? 'selected' : ''}>Urgente</option></select></div>
-          </div>
-          <div><label>Presupuesto (€)</label><input type="number" step="0.01" id="editProjBudget" value="${p.budget || 0}"></div>
-          <div><label>Notas</label><textarea id="editProjNotes" rows="3">${p.notes || ''}</textarea></div>
-          <div class="card-actions-centered" style="margin-top:14px;">
-            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
-            <button type="submit" class="btn primary">Guardar</button>
-          </div>
-        </form>
-      `;
-      $('#editProjectForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await updateProject(id, {
-          name: $('#editProjName').value.trim(),
-          client: $('#editProjClient').value.trim(),
-          phase: $('#editProjPhase').value,
-          status: $('#editProjStatus').value,
-          budget: parseFloat($('#editProjBudget').value) || 0,
-          notes: $('#editProjNotes').value.trim()
-        });
-        $('#projectModal').style.display = 'none';
-      });
-      $('#projectModal').style.display = 'flex';
-    }
-
-    function openEditTaskModal(id) {
-      const t = state.tasks.find(x => x.id == id);
-      if (!t) return;
-      $('#modalHeaderRow').innerHTML = `<div><h3>Editar Tarea</h3><div class="muted">${t.title}</div></div>`;
-      const opts = state.projects.map(p => `<option value="${p.id}" ${p.id === t.project_id ? 'selected' : ''}>${p.name}</option>`).join('');
-      $('#modalBody').innerHTML = `
-        <form class="form" id="editTaskForm">
-          <div><label>Obra</label><select id="editTaskProj">${opts}</select></div>
-          <div><label>Título</label><input id="editTaskTitle" value="${t.title}" required></div>
-          <div class="split">
-            <div><label>Fecha</label><input type="date" id="editTaskDate" value="${t.date}" required></div>
-            <div><label>Prioridad</label><select id="editTaskPriority"><option ${t.priority === 'Normal' ? 'selected' : ''}>Normal</option><option ${t.priority === 'Alta' ? 'selected' : ''}>Alta</option><option ${t.priority === 'Urgente' ? 'selected' : ''}>Urgente</option></select></div>
-          </div>
-          <div class="card-actions-centered" style="margin-top:14px;">
-            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
-            <button type="submit" class="btn primary">Guardar</button>
-          </div>
-        </form>
-      `;
-      $('#editTaskForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await updateTask(id, {
-          project_id: parseInt($('#editTaskProj').value),
-          title: $('#editTaskTitle').value.trim(),
-          date: $('#editTaskDate').value,
-          priority: $('#editTaskPriority').value
-        });
-        $('#projectModal').style.display = 'none';
-      });
-      $('#projectModal').style.display = 'flex';
-    }
-
-    function openEditMoneyModal(id) {
-      const m = state.money.find(x => x.id == id);
-      if (!m) return;
-      $('#modalHeaderRow').innerHTML = `<div><h3>Editar Movimiento</h3><div class="muted">${m.concept}</div></div>`;
-      const opts = state.projects.map(p => `<option value="${p.id}" ${p.id === m.project_id ? 'selected' : ''}>${p.name}</option>`).join('');
-      $('#modalBody').innerHTML = `
-        <form class="form" id="editMoneyForm">
-          <div><label>Obra</label><select id="editMoneyProj">${opts}</select></div>
-          <div class="split">
-            <div><label>Tipo</label><select id="editMoneyType"><option ${m.type === 'Ingreso' ? 'selected' : ''}>Ingreso</option><option ${m.type === 'Gasto' ? 'selected' : ''}>Gasto</option></select></div>
-            <div><label>Importe (€)</label><input type="number" step="0.01" id="editMoneyAmount" value="${m.amount}" required min="0"></div>
-          </div>
-          <div><label>Concepto</label><input id="editMoneyConcept" value="${m.concept}" required></div>
-          <div class="card-actions-centered" style="margin-top:14px;">
-            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
-            <button type="submit" class="btn primary">Guardar</button>
-          </div>
-        </form>
-      `;
-      $('#editMoneyForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const amount = parseFloat($('#editMoneyAmount').value);
-        if (amount < 0) { toast('El importe debe ser positivo'); return; }
-        await updateMoney(id, {
-          project_id: parseInt($('#editMoneyProj').value),
-          type: $('#editMoneyType').value,
-          amount: amount,
-          concept: $('#editMoneyConcept').value.trim()
-        });
-        $('#projectModal').style.display = 'none';
-      });
-      $('#projectModal').style.display = 'flex';
-    }
-
-    function openEditDocModal(id) {
-      const d = state.docs.find(x => x.id == id);
-      if (!d) return;
-      $('#modalHeaderRow').innerHTML = `<div><h3>Editar Documento</h3><div class="muted">${d.name}</div></div>`;
-      const opts = state.projects.map(p => `<option value="${p.id}" ${p.id === d.project_id ? 'selected' : ''}>${p.name}</option>`).join('');
-      $('#modalBody').innerHTML = `
-        <form class="form" id="editDocForm">
-          <div><label>Obra</label><select id="editDocProj">${opts}</select></div>
-          <div class="split">
-            <div><label>Nombre</label><input id="editDocName" value="${d.name}" required></div>
-            <div><label>Tipo</label><select id="editDocType"><option ${d.type === 'PDF' ? 'selected' : ''}>PDF</option><option ${d.type === 'DWG' ? 'selected' : ''}>DWG</option><option ${d.type === 'DOCX' ? 'selected' : ''}>DOCX</option><option ${d.type === 'IMG' ? 'selected' : ''}>IMG</option></select></div>
-          </div>
-          <div class="card-actions-centered" style="margin-top:14px;">
-            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
-            <button type="submit" class="btn primary">Guardar</button>
-          </div>
-        </form>
-      `;
-      $('#editDocForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await updateDoc(id, {
-          project_id: parseInt($('#editDocProj').value),
-          name: $('#editDocName').value.trim(),
-          type: $('#editDocType').value
-        });
-        $('#projectModal').style.display = 'none';
-      });
-      $('#projectModal').style.display = 'flex';
-    }
-
-    function openAddNoteModal() {
-      $('#modalHeaderRow').innerHTML = `<div><h3>Nueva Nota</h3><div class="muted">Anotación interna</div></div>`;
-      const docOpts = '<option value="">-- Ninguno --</option>' + state.docs.map(d => `<option value="${d.id}">${d.name} (${d.type})</option>`).join('');
-      const projectOpts = '<option value="">-- Sin obra --</option>' + state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-      $('#modalBody').innerHTML = `
-        <form class="form" id="addNoteForm">
-          <div><label>Título</label><input id="newNoteTitle" required placeholder="Ej. Revisar mediciones"></div>
-          <div><label>Obra (opcional)</label><select id="newNoteProject">${projectOpts}</select></div>
-          <div><label>Documento vinculado (opcional)</label><select id="newNoteDoc">${docOpts}</select></div>
-          <div><label>Contenido</label><textarea id="newNoteBody" rows="4" placeholder="Añade detalles..."></textarea></div>
-          <div class="card-actions-centered" style="margin-top:14px;">
-            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
-            <button type="submit" class="btn primary">Guardar Nota</button>
-          </div>
-        </form>
-      `;
-      $('#addNoteForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await createNote(
-          $('#newNoteTitle').value.trim(),
-          $('#newNoteBody').value.trim(),
-          $('#newNoteDoc').value ? parseInt($('#newNoteDoc').value) : null,
-          $('#newNoteProject').value ? parseInt($('#newNoteProject').value) : null
-        );
-        $('#projectModal').style.display = 'none';
-      });
-      $('#projectModal').style.display = 'flex';
-    }
-
-    function openAddAlertModal() {
-      $('#modalHeaderRow').innerHTML = `<div><h3>Nueva Alerta</h3><div class="muted">Recordatorio de vencimiento</div></div>`;
-      $('#modalBody').innerHTML = `
-        <form class="form" id="addAlertForm">
-          <div><label>Concepto</label><input id="newAlertText" required placeholder="Ej. Entregar visado"></div>
-          <div><label>Fecha límite</label><input type="date" id="newAlertDate" value="${getLocalDateString()}" required></div>
-          <div class="card-actions-centered" style="margin-top:14px;">
-            <button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button>
-            <button type="submit" class="btn primary">Guardar Alerta</button>
-          </div>
-        </form>
-      `;
-      $('#addAlertForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await createAlert($('#newAlertText').value.trim(), $('#newAlertDate').value);
-        $('#projectModal').style.display = 'none';
-      });
-      $('#projectModal').style.display = 'flex';
-    }
-
-    // ============================================
-    // EVENTOS Y DELEGACIÓN
-    // ============================================
-    function setupLoginListeners() {
-      $('#showRegisterLink').addEventListener('click', (e) => {
-        e.preventDefault();
-        $('#loginForm').style.display = 'none';
-        $('#registerForm').style.display = 'grid';
-      });
-      $('#showLoginLink').addEventListener('click', (e) => {
-        e.preventDefault();
-        $('#loginForm').style.display = 'grid';
-        $('#registerForm').style.display = 'none';
-      });
-      $('#loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await login($('#loginEmail').value, $('#loginPassword').value);
-      });
-      $('#registerForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await register($('#registerEmail').value, $('#registerPassword').value);
-        $('#loginForm').style.display = 'grid';
-        $('#registerForm').style.display = 'none';
-        $('#loginEmail').value = $('#registerEmail').value;
-        $('#loginPassword').value = '';
-      });
-    }
-
-    function setupAppListeners() {
-      // Navegación
-      document.querySelectorAll('[data-go]').forEach(el => {
-        el.addEventListener('click', () => setSection(el.dataset.go));
-      });
-
-      // Tema
-      $('#themeBtn').addEventListener('click', () => {
-        document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        toast('Tema cambiado');
-      });
-
-      // Logout
-      $('#logoutBtn').addEventListener('click', logout);
-
-      // Búsqueda y filtro
-      $('#searchInput')?.addEventListener('input', render);
-      $('#phaseFilter')?.addEventListener('change', render);
-
-      // Crear obra
-      $('#projectForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await createProject($('#newProjName').value.trim(), $('#newProjClient').value.trim());
-        e.target.reset();
-        $('#searchInput').value = '';
-      });
-
-      // Crear tarea
-      $('#taskForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await createTask(
-          parseInt($('#taskProject').value),
-          $('#taskTitle').value.trim(),
-          $('#taskDate').value,
-          $('#taskPriority').value
-        );
-        e.target.reset();
-        $('#searchInput').value = '';
-      });
-
-      // Crear movimiento
-      $('#moneyForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await createMoney(
-          parseInt($('#moneyProject').value),
-          $('#moneyType').value,
-          $('#moneyConcept').value.trim(),
-          parseFloat($('#moneyAmount').value)
-        );
-        e.target.reset();
-        $('#searchInput').value = '';
-      });
-
-      // Crear documento
-      $('#docForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await createDoc(
-          parseInt($('#docProject').value),
-          $('#docName').value.trim(),
-          $('#docType').value
-        );
-        e.target.reset();
-        $('#searchInput').value = '';
-      });
-
-      // Notas y alertas
-      $('#addNoteBtn').addEventListener('click', openAddNoteModal);
-      $('#addAlertBtn').addEventListener('click', openAddAlertModal);
-
-      // Exportar/Importar/Reset
-      $('#exportBtn').addEventListener('click', exportData);
-      $('#importInput').addEventListener('change', async (e) => {
-        if (e.target.files.length > 0) {
-          await importData(e.target.files[0]);
-          e.target.value = '';
-        }
-      });
-      $('#resetBtn').addEventListener('click', async () => {
-        if (confirm('¿Eliminar todos tus datos permanentemente?')) {
-          await supabase.from('projects').delete().eq('user_id', currentUser.id);
-          await supabase.from('tasks').delete().eq('user_id', currentUser.id);
-          await supabase.from('money').delete().eq('user_id', currentUser.id);
-          await supabase.from('docs').delete().eq('user_id', currentUser.id);
-          await supabase.from('notes').delete().eq('user_id', currentUser.id);
-          await supabase.from('alerts').delete().eq('user_id', currentUser.id);
-          state = { projects: [], tasks: [], money: [], docs: [], notes: [], alerts: [] };
-          render();
-          toast('Datos eliminados');
-        }
-      });
-
-      // Cerrar modal
-      $('#projectModal').addEventListener('click', (e) => {
-        if (e.target.id === 'projectModal') $('#projectModal').style.display = 'none';
-      });
-
-      // Delegación de eventos
-      document.addEventListener('click', (e) => {
-        const d = e.target.dataset;
-        if (d.taskDone !== undefined) {
-          toggleTaskDone(parseInt(d.taskDone), e.target.checked);
-        }
-        if (d.triggerDel) {
-          openConfirmDeleteModal(d.triggerDel, parseInt(d.id));
-        }
-        if (d.viewProject) {
-          openProjectModal(parseInt(d.viewProject));
-        }
-        if (d.viewNote) {
-          openNoteViewModal(parseInt(d.viewNote));
-        }
-        if (d.editProject) {
-          openEditProjectModal(parseInt(d.editProject));
-        }
-        if (d.editTask) {
-          openEditTaskModal(parseInt(d.editTask));
-        }
-        if (d.editMoney) {
-          openEditMoneyModal(parseInt(d.editMoney));
-        }
-        if (d.editDoc) {
-          openEditDocModal(parseInt(d.editDoc));
-        }
-      });
-    }
-
-    // ============================================
-    // INICIALIZACIÓN
-    // ============================================
-    document.addEventListener('DOMContentLoaded', async () => {
-      await initSupabase();
-      setupLoginListeners();
-      
-      if (currentUser) {
-        showApp();
-        await loadUserData();
-        setupAppListeners();
-        render();
-      } else {
-        showLoginScreen();
       }
     });
-  </script>
+    return supabase;
+  } catch (e) {
+    console.error('Error initSupabase:', e);
+    toast('Error de conexión con Supabase');
+    return null;
+  }
+}
+
+// ============================================================
+// AUTENTICACIÓN
+// ============================================================
+async function login(email, password) {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    currentUser = data.user;
+    return { success: true };
+  } catch (e) {
+    toast('Error al iniciar sesión: ' + e.message);
+    return { success: false };
+  }
+}
+
+async function register(email, password) {
+  try {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+    if (data.user) toast('Cuenta creada. Revisa tu email para confirmar.');
+    return { success: true };
+  } catch (e) {
+    toast('Error al registrar: ' + e.message);
+    return { success: false };
+  }
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  currentUser = null;
+  state = { projects: [], tasks: [], money: [], docs: [], notes: [], alerts: [] };
+  showLoginScreen();
+  toast('Sesión cerrada');
+}
+
+// ============================================================
+// MOSTRAR/OCULTAR
+// ============================================================
+function showLoginScreen() {
+  $('#loginScreen').style.display = 'flex';
+  $('#app').style.display = 'none';
+}
+
+function showApp() {
+  $('#loginScreen').style.display = 'none';
+  $('#app').style.display = 'grid';
+  if (currentUser) $('#userEmailDisplay').textContent = currentUser.email;
+}
+
+// ============================================================
+// CARGAR DATOS DEL USUARIO
+// ============================================================
+async function loadUserData() {
+  if (!currentUser) return;
+  try {
+    const uid = currentUser.id;
+    const [p, t, m, d, n, a] = await Promise.all([
+      supabase.from('projects').select('*').eq('user_id', uid),
+      supabase.from('tasks').select('*').eq('user_id', uid),
+      supabase.from('money').select('*').eq('user_id', uid),
+      supabase.from('docs').select('*').eq('user_id', uid),
+      supabase.from('notes').select('*').eq('user_id', uid),
+      supabase.from('alerts').select('*').eq('user_id', uid)
+    ]);
+    state.projects = p.data || [];
+    state.tasks = t.data || [];
+    state.money = m.data || [];
+    state.docs = d.data || [];
+    state.notes = n.data || [];
+    state.alerts = a.data || [];
+    syncProjectExpenses();
+  } catch (e) {
+    console.error('loadUserData error:', e);
+    toast('Error al cargar datos');
+  }
+}
+
+// ============================================================
+// CRUD - PROYECTOS
+// ============================================================
+async function createProject(name, client) {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supabase.from('projects').insert([{
+      user_id: currentUser.id, name: name.trim(), client: client.trim(),
+      phase: 'Anteproyecto', status: 'En plazo', budget: 0, notes: 'Nueva obra creada.'
+    }]).select();
+    if (error) throw error;
+    if (data && data.length) { state.projects.unshift(data[0]); render(); toast('Obra creada'); }
+  } catch (e) { toast('Error al crear obra: ' + e.message); }
+}
+
+async function updateProject(id, updates) {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supabase.from('projects').update(updates).eq('id', id).eq('user_id', currentUser.id).select();
+    if (error) throw error;
+    if (data && data.length) {
+      const idx = state.projects.findIndex(p => p.id === id);
+      if (idx !== -1) state.projects[idx] = data[0];
+      render(); toast('Obra actualizada');
+    }
+  } catch (e) { toast('Error al actualizar obra: ' + e.message); }
+}
+
+async function deleteProject(id) {
+  if (!currentUser) return;
+  try {
+    const name = (state.projects.find(p => p.id === id) || {}).name || 'Obra';
+    await supabase.from('projects').delete().eq('id', id).eq('user_id', currentUser.id);
+    state.projects = state.projects.filter(p => p.id !== id);
+    state.tasks = state.tasks.filter(t => t.project_id !== id);
+    state.money = state.money.filter(m => m.project_id !== id);
+    state.docs = state.docs.filter(d => d.project_id !== id);
+    state.notes = state.notes.filter(n => n.project_id !== id);
+    render(); toast(`"${name}" eliminada`);
+  } catch (e) { toast('Error al eliminar obra: ' + e.message); }
+}
+
+// ============================================================
+// CRUD - TAREAS
+// ============================================================
+async function createTask(projectId, title, date, priority = 'Normal') {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supabase.from('tasks').insert([{
+      user_id: currentUser.id, project_id: projectId, title: title.trim(),
+      date, priority, done: false
+    }]).select();
+    if (error) throw error;
+    if (data && data.length) { state.tasks.unshift(data[0]); render(); toast('Tarea creada'); }
+  } catch (e) { toast('Error al crear tarea: ' + e.message); }
+}
+
+async function updateTask(id, updates) {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supabase.from('tasks').update(updates).eq('id', id).eq('user_id', currentUser.id).select();
+    if (error) throw error;
+    if (data && data.length) {
+      const idx = state.tasks.findIndex(t => t.id === id);
+      if (idx !== -1) state.tasks[idx] = data[0];
+      render(); toast('Tarea actualizada');
+    }
+  } catch (e) { toast('Error al actualizar tarea: ' + e.message); }
+}
+
+async function deleteTask(id) {
+  if (!currentUser) return;
+  try {
+    await supabase.from('tasks').delete().eq('id', id).eq('user_id', currentUser.id);
+    state.tasks = state.tasks.filter(t => t.id !== id);
+    render(); toast('Tarea eliminada');
+  } catch (e) { toast('Error al eliminar tarea: ' + e.message); }
+}
+
+async function toggleTaskDone(id, done) {
+  return await updateTask(id, { done });
+}
+
+// ============================================================
+// CRUD - MOVIMIENTOS
+// ============================================================
+async function createMoney(projectId, type, concept, amount) {
+  if (!currentUser) return;
+  if (amount < 0) { toast('El importe debe ser positivo'); return; }
+  try {
+    const { data, error } = await supabase.from('money').insert([{
+      user_id: currentUser.id, project_id: projectId, type, concept: concept.trim(),
+      amount, date: getToday()
+    }]).select();
+    if (error) throw error;
+    if (data && data.length) { state.money.unshift(data[0]); syncProjectExpenses(); render(); toast('Movimiento registrado'); }
+  } catch (e) { toast('Error al registrar movimiento: ' + e.message); }
+}
+
+async function updateMoney(id, updates) {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supabase.from('money').update(updates).eq('id', id).eq('user_id', currentUser.id).select();
+    if (error) throw error;
+    if (data && data.length) {
+      const idx = state.money.findIndex(m => m.id === id);
+      if (idx !== -1) state.money[idx] = data[0];
+      syncProjectExpenses(); render(); toast('Movimiento actualizado');
+    }
+  } catch (e) { toast('Error al actualizar movimiento: ' + e.message); }
+}
+
+async function deleteMoney(id) {
+  if (!currentUser) return;
+  try {
+    await supabase.from('money').delete().eq('id', id).eq('user_id', currentUser.id);
+    state.money = state.money.filter(m => m.id !== id);
+    syncProjectExpenses(); render(); toast('Movimiento eliminado');
+  } catch (e) { toast('Error al eliminar movimiento: ' + e.message); }
+}
+
+// ============================================================
+// CRUD - DOCUMENTOS
+// ============================================================
+async function createDoc(projectId, name, type) {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supabase.from('docs').insert([{
+      user_id: currentUser.id, project_id: projectId, name: name.trim(), type, date: getToday()
+    }]).select();
+    if (error) throw error;
+    if (data && data.length) { state.docs.unshift(data[0]); render(); toast('Documento guardado'); }
+  } catch (e) { toast('Error al guardar documento: ' + e.message); }
+}
+
+async function updateDoc(id, updates) {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supabase.from('docs').update(updates).eq('id', id).eq('user_id', currentUser.id).select();
+    if (error) throw error;
+    if (data && data.length) {
+      const idx = state.docs.findIndex(d => d.id === id);
+      if (idx !== -1) state.docs[idx] = data[0];
+      render(); toast('Documento actualizado');
+    }
+  } catch (e) { toast('Error al actualizar documento: ' + e.message); }
+}
+
+async function deleteDoc(id) {
+  if (!currentUser) return;
+  try {
+    await supabase.from('docs').delete().eq('id', id).eq('user_id', currentUser.id);
+    state.docs = state.docs.filter(d => d.id !== id);
+    render(); toast('Documento eliminado');
+  } catch (e) { toast('Error al eliminar documento: ' + e.message); }
+}
+
+// ============================================================
+// CRUD - NOTAS
+// ============================================================
+async function createNote(title, body, docId = null, projectId = null) {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supabase.from('notes').insert([{
+      user_id: currentUser.id, project_id: projectId, doc_id: docId,
+      title: title.trim(), body: body.trim() || 'Sin contenido', date: getToday()
+    }]).select();
+    if (error) throw error;
+    if (data && data.length) { state.notes.unshift(data[0]); render(); toast('Nota guardada'); }
+  } catch (e) { toast('Error al guardar nota: ' + e.message); }
+}
+
+async function deleteNote(id) {
+  if (!currentUser) return;
+  try {
+    await supabase.from('notes').delete().eq('id', id).eq('user_id', currentUser.id);
+    state.notes = state.notes.filter(n => n.id !== id);
+    render(); toast('Nota eliminada');
+  } catch (e) { toast('Error al eliminar nota: ' + e.message); }
+}
+
+// ============================================================
+// CRUD - ALERTAS
+// ============================================================
+async function createAlert(text, date) {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supabase.from('alerts').insert([{
+      user_id: currentUser.id, text: text.trim(), date
+    }]).select();
+    if (error) throw error;
+    if (data && data.length) { state.alerts.unshift(data[0]); render(); toast('Alerta creada'); }
+  } catch (e) { toast('Error al crear alerta: ' + e.message); }
+}
+
+async function deleteAlert(id) {
+  if (!currentUser) return;
+  try {
+    await supabase.from('alerts').delete().eq('id', id).eq('user_id', currentUser.id);
+    state.alerts = state.alerts.filter(a => a.id !== id);
+    render(); toast('Alerta eliminada');
+  } catch (e) { toast('Error al eliminar alerta: ' + e.message); }
+}
+
+// ============================================================
+// EXPORTAR E IMPORTAR
+// ============================================================
+function exportData() {
+  const data = { user: currentUser.email, exportedAt: new Date().toISOString(), ...state };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `obra-clara-pro-${getToday()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Datos exportados');
+}
+
+async function importData(file) {
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!data.projects || !Array.isArray(data.projects)) { toast('JSON inválido'); return; }
+    if (!confirm('¿Sobrescribir todos tus datos actuales?')) return;
+    await supabase.from('projects').delete().eq('user_id', currentUser.id);
+    await supabase.from('tasks').delete().eq('user_id', currentUser.id);
+    await supabase.from('money').delete().eq('user_id', currentUser.id);
+    await supabase.from('docs').delete().eq('user_id', currentUser.id);
+    await supabase.from('notes').delete().eq('user_id', currentUser.id);
+    await supabase.from('alerts').delete().eq('user_id', currentUser.id);
+    for (const p of data.projects) await createProject(p.name, p.client || '');
+    await loadUserData();
+    render();
+    toast('Datos importados');
+  } catch (e) { toast('Error al importar: ' + e.message); }
+}
+
+// ============================================================
+// RENDERIZADO
+// ============================================================
+function renderOptions() {
+  const opts = state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  ['taskProject', 'moneyProject', 'docProject'].forEach(id => {
+    const el = $(`#${id}`);
+    if (el) el.innerHTML = opts;
+  });
+}
+
+function setSection(id) {
+  $$('.section').forEach(s => s.classList.toggle('active', s.id === id));
+  $$('[data-go]').forEach(b => b.classList.toggle('active', b.dataset.go === id));
+  $('#pageTitle').textContent = id.charAt(0).toUpperCase() + id.slice(1);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function render() {
+  const q = ($('#searchInput')?.value || '').toLowerCase();
+  const phase = ($('#phaseFilter')?.value || 'Todos');
+  const k = calcStats();
+
+  // KPIs
+  $('#kpis').innerHTML = [
+    ['Obras activas', state.projects.length],
+    ['Tareas abiertas', k.openTasks],
+    ['Docs', state.docs.length],
+    ['Presupuestos superados', k.overBudget]
+  ].map(([a, b]) => `<div class="card kpi"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('');
+
+  // Hoy
+  $('#todayStats').innerHTML = [
+    ['Visitas hoy', state.tasks.filter(t => t.date === getToday()).length],
+    ['Obras críticas', k.urgent],
+    ['Alertas', state.alerts.length]
+  ].map(([a, b]) => `<div class="item"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('');
+
+  // Proyectos
+  const filtered = state.projects.filter(p =>
+    `${p.name} ${p.client} ${p.phase} ${p.status} ${p.notes}`.toLowerCase().includes(q) &&
+    (phase === 'Todos' || p.phase === phase)
+  );
+  $('#projectsList').innerHTML = filtered.map(p => `
+    <div class="item">
+      <div class="row">
+        <div><strong>${p.name}</strong><div class="meta"><span>${p.client}</span><span>${p.phase}</span><span>${p.budget ? fmt(p.budget) : 'Sin presupuesto'}</span></div></div>
+        <div>${statusBadge(p.status)}</div>
+      </div>
+      <div class="muted">${p.notes}</div>
+      ${projectProgress(p)}
+      <div class="card-actions-centered">
+        <button class="btn action-view" data-view-project="${p.id}">Ver</button>
+        <button class="btn action-edit" data-edit-project="${p.id}">Editar</button>
+        <button class="btn action-delete" data-trigger-del="project" data-id="${p.id}">Borrar</button>
+      </div>
+    </div>
+  `).join('') || '<div class="item">Sin resultados</div>';
+
+  // Tareas
+  $('#tasksList').innerHTML = state.tasks.filter(t =>
+    `${t.title} ${projectName(t.project_id)} ${t.priority}`.toLowerCase().includes(q)
+  ).map(t => `
+    <div class="item">
+      <div class="row">
+        <div><strong>${t.title}</strong><div class="meta"><span>${projectName(t.project_id)}</span><span>${t.date}</span></div></div>
+        <div><span class="badge ${t.priority === 'Urgente' ? 'bad' : t.priority === 'Alta' ? 'warn' : 'good'}">${t.priority}</span></div>
+      </div>
+      <label class="meta"><input class="check" type="checkbox" data-task-done="${t.id}" ${t.done ? 'checked' : ''}> ${t.done ? 'Completada' : 'Pendiente'}</label>
+      <div class="card-actions-centered">
+        <button class="btn action-edit" data-edit-task="${t.id}">Editar</button>
+        <button class="btn action-delete" data-trigger-del="task" data-id="${t.id}">Borrar</button>
+      </div>
+    </div>
+  `).join('') || '<div class="item">Sin tareas</div>';
+
+  // Movimientos
+  $('#moneyList').innerHTML = state.money.filter(m =>
+    `${m.concept} ${projectName(m.project_id)} ${m.type}`.toLowerCase().includes(q)
+  ).map(m => `
+    <div class="item">
+      <div class="row">
+        <div><strong>${m.concept}</strong><div class="meta"><span>${projectName(m.project_id)}</span><span>${m.date}</span></div></div>
+        <div><strong style="color:var(${m.type === 'Ingreso' ? '--good' : '--bad'})">${m.type === 'Ingreso' ? '+' : '-'}${fmt(m.amount)}</strong></div>
+      </div>
+      <div class="card-actions-centered">
+        <button class="btn action-edit" data-edit-money="${m.id}">Editar</button>
+        <button class="btn action-delete" data-trigger-del="money" data-id="${m.id}">Borrar</button>
+      </div>
+    </div>
+  `).join('') || '<div class="item">Sin movimientos</div>';
+
+  // Documentos
+  $('#docsList').innerHTML = state.docs.filter(d =>
+    `${d.name} ${projectName(d.project_id)} ${d.type}`.toLowerCase().includes(q)
+  ).map(d => `
+    <div class="item">
+      <div class="row">
+        <div><strong>${d.name}</strong><div class="meta"><span>${projectName(d.project_id)}</span><span>${d.type}</span></div></div>
+        <div><span class="badge info">📎 Guardado</span></div>
+      </div>
+      <div class="card-actions-centered">
+        <button class="btn action-edit" data-edit-doc="${d.id}">Editar</button>
+        <button class="btn action-delete" data-trigger-del="doc" data-id="${d.id}">Borrar</button>
+      </div>
+    </div>
+  `).join('') || '<div class="item">Sin documentos</div>';
+
+  // Notas
+  $('#notesList').innerHTML = (state.notes || []).map(n => `
+    <div class="item">
+      <div class="row">
+        <div><strong>${n.title}</strong> ${n.doc_id ? '<span class="badge info" style="padding:2px 6px;font-size:10px;">📎</span>' : ''}${n.project_id ? `<div class="meta">${projectName(n.project_id)}</div>` : ''}</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn action-view" data-view-note="${n.id}">Ver</button>
+          <button class="btn action-delete" data-trigger-del="note" data-id="${n.id}">Borrar</button>
+        </div>
+      </div>
+    </div>
+  `).join('') || '<div class="item">Sin notas</div>';
+
+  // Alertas
+  $('#alertsList').innerHTML = (state.alerts || []).map(a => `
+    <div class="item">
+      <div class="row">
+        <div><strong>${a.text}</strong><div class="muted">${a.date}</div></div>
+        <button class="btn action-delete" data-trigger-del="alert" data-id="${a.id}">Borrar</button>
+      </div>
+    </div>
+  `).join('') || '<div class="item">Sin alertas</div>';
+
+  renderOptions();
+  $('#jsonPreview').textContent = JSON.stringify(state, null, 2);
+}
+
+function calcStats() {
+  const income = state.money.filter(m => m.type === 'Ingreso').reduce((s, m) => s + (Number(m.amount) || 0), 0);
+  const expense = state.money.filter(m => m.type === 'Gasto').reduce((s, m) => s + (Number(m.amount) || 0), 0);
+  return {
+    income, expense, margin: income - expense,
+    openTasks: state.tasks.filter(t => !t.done).length,
+    urgent: state.projects.filter(p => p.status === 'Urgente').length,
+    overBudget: state.projects.filter(p => Number(p.budget) > 0 && (Number(p.spent) || 0) > Number(p.budget)).length
+  };
+}
+
+// ============================================================
+// MODALES
+// ============================================================
+function openConfirmDeleteModal(type, id) {
+  let name = '';
+  switch(type) {
+    case 'project': name = (state.projects.find(p => p.id === id) || {}).name || 'Obra'; break;
+    case 'task': name = (state.tasks.find(t => t.id === id) || {}).title || 'Tarea'; break;
+    case 'money': name = (state.money.find(m => m.id === id) || {}).concept || 'Movimiento'; break;
+    case 'doc': name = (state.docs.find(d => d.id === id) || {}).name || 'Documento'; break;
+    case 'note': name = (state.notes.find(n => n.id === id) || {}).title || 'Nota'; break;
+    case 'alert': name = (state.alerts.find(a => a.id === id) || {}).text || 'Alerta'; break;
+  }
+  const msg = type === 'project' ? `¡Atención! Al eliminar "${name}" se borrarán todas sus tareas, documentos y movimientos.` : `¿Eliminar "${name}" permanentemente?`;
+  $('#modalHeaderRow').innerHTML = `<div><h3>Confirmar eliminación</h3><div class="muted">Acción irreversible</div></div>`;
+  $('#modalBody').innerHTML = `
+    <div class="item" style="background:color-mix(in srgb, var(--bad) 8%, transparent);border-color:var(--bad);padding:16px;text-align:center;">${msg}</div>
+    <div class="card-actions-centered"><button class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button><button class="btn action-delete" id="confirmDeleteBtn">Eliminar</button></div>
+  `;
+  $('#confirmDeleteBtn').onclick = async () => {
+    $('#projectModal').style.display = 'none';
+    switch(type) {
+      case 'project': await deleteProject(id); break;
+      case 'task': await deleteTask(id); break;
+      case 'money': await deleteMoney(id); break;
+      case 'doc': await deleteDoc(id); break;
+      case 'note': await deleteNote(id); break;
+      case 'alert': await deleteAlert(id); break;
+    }
+  };
+  $('#projectModal').style.display = 'flex';
+}
+
+function openProjectModal(id) {
+  const p = state.projects.find(x => x.id == id);
+  if (!p) return;
+  $('#modalHeaderRow').innerHTML = `<div><h3>Detalle de obra</h3><div class="muted">${p.name} · ${p.client}</div></div>`;
+  const pt = state.tasks.filter(t => t.project_id == id);
+  const pm = state.money.filter(m => m.project_id == id);
+  const pd = state.docs.filter(d => d.project_id == id);
+  $('#modalBody').innerHTML = `
+    <div class="split">
+      <div><h3>Tareas</h3>${pt.map(t => `<div class="item"><strong>${t.title}</strong><div class="meta"><span>${t.date}</span><span class="badge ${t.priority === 'Urgente' ? 'bad' : t.priority === 'Alta' ? 'warn' : 'good'}">${t.priority}</span></div></div>`).join('') || '<div class="item">Sin tareas</div>'}</div>
+      <div><h3>Documentos</h3>${pd.map(d => `<div class="item"><strong>${d.name}</strong><div class="meta"><span>${d.type}</span><span>${d.date}</span></div></div>`).join('') || '<div class="item">Sin documentos</div>'}</div>
+    </div>
+    <div><h3>Economía</h3>${pm.map(m => `<div class="item"><div class="row"><strong>${m.concept}</strong><strong style="color:var(${m.type === 'Ingreso' ? '--good' : '--bad'})">${m.type === 'Ingreso' ? '+' : '-'}${fmt(m.amount)}</strong></div></div>`).join('') || '<div class="item">Sin movimientos</div>'}</div>
+    <div class="card-actions-centered"><button class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cerrar</button></div>
+  `;
+  $('#projectModal').style.display = 'flex';
+}
+
+function openNoteViewModal(id) {
+  const n = state.notes.find(x => x.id == id);
+  if (!n) return;
+  $('#modalHeaderRow').innerHTML = `<div><h3>${n.title}</h3><div class="muted">Creada el ${n.date || '—'}</div></div>`;
+  let docHtml = '';
+  if (n.doc_id) {
+    const d = state.docs.find(x => x.id == n.doc_id);
+    if (d) docHtml = `<div style="margin-top:14px;"><h3 style="font-size:14px;">Documento vinculado:</h3><div class="badge info">📎 ${d.name} (${d.type})</div></div>`;
+  }
+  $('#modalBody').innerHTML = `
+    <div class="item" style="background:var(--surface2);padding:16px;white-space:pre-wrap;">${n.body || 'Sin contenido'}</div>
+    ${docHtml}
+    <div class="card-actions-centered"><button class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cerrar</button></div>
+  `;
+  $('#projectModal').style.display = 'flex';
+}
+
+function openEditProjectModal(id) {
+  const p = state.projects.find(x => x.id == id);
+  if (!p) return;
+  $('#modalHeaderRow').innerHTML = `<div><h3>Editar Obra</h3><div class="muted">${p.name}</div></div>`;
+  $('#modalBody').innerHTML = `
+    <form class="form" id="editProjectForm">
+      <div><label>Nombre</label><input id="editProjName" value="${p.name}" required></div>
+      <div><label>Cliente</label><input id="editProjClient" value="${p.client || ''}" required></div>
+      <div class="split">
+        <div><label>Fase</label><select id="editProjPhase"><option ${p.phase === 'Anteproyecto' ? 'selected' : ''}>Anteproyecto</option><option ${p.phase === 'Proyecto básico' ? 'selected' : ''}>Proyecto básico</option><option ${p.phase === 'Licencia' ? 'selected' : ''}>Licencia</option><option ${p.phase === 'Ejecución' ? 'selected' : ''}>Ejecución</option></select></div>
+        <div><label>Estado</label><select id="editProjStatus"><option ${p.status === 'En plazo' ? 'selected' : ''}>En plazo</option><option ${p.status === 'Bloqueado' ? 'selected' : ''}>Bloqueado</option><option ${p.status === 'Urgente' ? 'selected' : ''}>Urgente</option></select></div>
+      </div>
+      <div><label>Presupuesto (€)</label><input type="number" step="0.01" id="editProjBudget" value="${p.budget || 0}"></div>
+      <div><label>Notas</label><textarea id="editProjNotes" rows="3">${p.notes || ''}</textarea></div>
+      <div class="card-actions-centered"><button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button><button type="submit" class="btn primary">Guardar</button></div>
+    </form>
+  `;
+  $('#editProjectForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await updateProject(id, {
+      name: $('#editProjName').value.trim(),
+      client: $('#editProjClient').value.trim(),
+      phase: $('#editProjPhase').value,
+      status: $('#editProjStatus').value,
+      budget: parseFloat($('#editProjBudget').value) || 0,
+      notes: $('#editProjNotes').value.trim()
+    });
+    $('#projectModal').style.display = 'none';
+  });
+  $('#projectModal').style.display = 'flex';
+}
+
+function openEditTaskModal(id) {
+  const t = state.tasks.find(x => x.id == id);
+  if (!t) return;
+  $('#modalHeaderRow').innerHTML = `<div><h3>Editar Tarea</h3><div class="muted">${t.title}</div></div>`;
+  const opts = state.projects.map(p => `<option value="${p.id}" ${p.id === t.project_id ? 'selected' : ''}>${p.name}</option>`).join('');
+  $('#modalBody').innerHTML = `
+    <form class="form" id="editTaskForm">
+      <div><label>Obra</label><select id="editTaskProj">${opts}</select></div>
+      <div><label>Título</label><input id="editTaskTitle" value="${t.title}" required></div>
+      <div class="split"><div><label>Fecha</label><input type="date" id="editTaskDate" value="${t.date}" required></div><div><label>Prioridad</label><select id="editTaskPriority"><option ${t.priority === 'Normal' ? 'selected' : ''}>Normal</option><option ${t.priority === 'Alta' ? 'selected' : ''}>Alta</option><option ${t.priority === 'Urgente' ? 'selected' : ''}>Urgente</option></select></div></div>
+      <div class="card-actions-centered"><button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button><button type="submit" class="btn primary">Guardar</button></div>
+    </form>
+  `;
+  $('#editTaskForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await updateTask(id, {
+      project_id: parseInt($('#editTaskProj').value),
+      title: $('#editTaskTitle').value.trim(),
+      date: $('#editTaskDate').value,
+      priority: $('#editTaskPriority').value
+    });
+    $('#projectModal').style.display = 'none';
+  });
+  $('#projectModal').style.display = 'flex';
+}
+
+function openEditMoneyModal(id) {
+  const m = state.money.find(x => x.id == id);
+  if (!m) return;
+  $('#modalHeaderRow').innerHTML = `<div><h3>Editar Movimiento</h3><div class="muted">${m.concept}</div></div>`;
+  const opts = state.projects.map(p => `<option value="${p.id}" ${p.id === m.project_id ? 'selected' : ''}>${p.name}</option>`).join('');
+  $('#modalBody').innerHTML = `
+    <form class="form" id="editMoneyForm">
+      <div><label>Obra</label><select id="editMoneyProj">${opts}</select></div>
+      <div class="split"><div><label>Tipo</label><select id="editMoneyType"><option ${m.type === 'Ingreso' ? 'selected' : ''}>Ingreso</option><option ${m.type === 'Gasto' ? 'selected' : ''}>Gasto</option></select></div><div><label>Importe (€)</label><input type="number" step="0.01" id="editMoneyAmount" value="${m.amount}" required min="0"></div></div>
+      <div><label>Concepto</label><input id="editMoneyConcept" value="${m.concept}" required></div>
+      <div class="card-actions-centered"><button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button><button type="submit" class="btn primary">Guardar</button></div>
+    </form>
+  `;
+  $('#editMoneyForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const amount = parseFloat($('#editMoneyAmount').value);
+    if (amount < 0) { toast('El importe debe ser positivo'); return; }
+    await updateMoney(id, {
+      project_id: parseInt($('#editMoneyProj').value),
+      type: $('#editMoneyType').value,
+      amount: amount,
+      concept: $('#editMoneyConcept').value.trim()
+    });
+    $('#projectModal').style.display = 'none';
+  });
+  $('#projectModal').style.display = 'flex';
+}
+
+function openEditDocModal(id) {
+  const d = state.docs.find(x => x.id == id);
+  if (!d) return;
+  $('#modalHeaderRow').innerHTML = `<div><h3>Editar Documento</h3><div class="muted">${d.name}</div></div>`;
+  const opts = state.projects.map(p => `<option value="${p.id}" ${p.id === d.project_id ? 'selected' : ''}>${p.name}</option>`).join('');
+  $('#modalBody').innerHTML = `
+    <form class="form" id="editDocForm">
+      <div><label>Obra</label><select id="editDocProj">${opts}</select></div>
+      <div class="split"><div><label>Nombre</label><input id="editDocName" value="${d.name}" required></div><div><label>Tipo</label><select id="editDocType"><option ${d.type === 'PDF' ? 'selected' : ''}>PDF</option><option ${d.type === 'DWG' ? 'selected' : ''}>DWG</option><option ${d.type === 'DOCX' ? 'selected' : ''}>DOCX</option><option ${d.type === 'IMG' ? 'selected' : ''}>IMG</option></select></div></div>
+      <div class="card-actions-centered"><button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button><button type="submit" class="btn primary">Guardar</button></div>
+    </form>
+  `;
+  $('#editDocForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await updateDoc(id, {
+      project_id: parseInt($('#editDocProj').value),
+      name: $('#editDocName').value.trim(),
+      type: $('#editDocType').value
+    });
+    $('#projectModal').style.display = 'none';
+  });
+  $('#projectModal').style.display = 'flex';
+}
+
+function openAddNoteModal() {
+  $('#modalHeaderRow').innerHTML = `<div><h3>Nueva Nota</h3><div class="muted">Anotación interna</div></div>`;
+  const docOpts = '<option value="">-- Ninguno --</option>' + state.docs.map(d => `<option value="${d.id}">${d.name} (${d.type})</option>`).join('');
+  const projOpts = '<option value="">-- Sin obra --</option>' + state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  $('#modalBody').innerHTML = `
+    <form class="form" id="addNoteForm">
+      <div><label>Título</label><input id="newNoteTitle" required placeholder="Ej. Revisar mediciones"></div>
+      <div><label>Obra (opcional)</label><select id="newNoteProject">${projOpts}</select></div>
+      <div><label>Documento vinculado (opcional)</label><select id="newNoteDoc">${docOpts}</select></div>
+      <div><label>Contenido</label><textarea id="newNoteBody" rows="4" placeholder="Añade detalles..."></textarea></div>
+      <div class="card-actions-centered"><button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button><button type="submit" class="btn primary">Guardar Nota</button></div>
+    </form>
+  `;
+  $('#addNoteForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await createNote(
+      $('#newNoteTitle').value.trim(),
+      $('#newNoteBody').value.trim(),
+      $('#newNoteDoc').value ? parseInt($('#newNoteDoc').value) : null,
+      $('#newNoteProject').value ? parseInt($('#newNoteProject').value) : null
+    );
+    $('#projectModal').style.display = 'none';
+  });
+  $('#projectModal').style.display = 'flex';
+}
+
+function openAddAlertModal() {
+  $('#modalHeaderRow').innerHTML = `<div><h3>Nueva Alerta</h3><div class="muted">Recordatorio de vencimiento</div></div>`;
+  $('#modalBody').innerHTML = `
+    <form class="form" id="addAlertForm">
+      <div><label>Concepto</label><input id="newAlertText" required placeholder="Ej. Entregar visado"></div>
+      <div><label>Fecha límite</label><input type="date" id="newAlertDate" value="${getToday()}" required></div>
+      <div class="card-actions-centered"><button type="button" class="btn secondary-neutral" onclick="$('#projectModal').style.display='none'">Cancelar</button><button type="submit" class="btn primary">Guardar Alerta</button></div>
+    </form>
+  `;
+  $('#addAlertForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await createAlert($('#newAlertText').value.trim(), $('#newAlertDate').value);
+    $('#projectModal').style.display = 'none';
+  });
+  $('#projectModal').style.display = 'flex';
+}
+
+// ============================================================
+// EVENTOS
+// ============================================================
+function setupLoginListeners() {
+  $('#showRegisterLink').addEventListener('click', e => { e.preventDefault(); $('#loginForm').style.display = 'none'; $('#registerForm').style.display = 'grid'; });
+  $('#showLoginLink').addEventListener('click', e => { e.preventDefault(); $('#loginForm').style.display = 'grid'; $('#registerForm').style.display = 'none'; });
+  $('#loginForm').addEventListener('submit', async e => { e.preventDefault(); await login($('#loginEmail').value, $('#loginPassword').value); });
+  $('#registerForm').addEventListener('submit', async e => { e.preventDefault(); await register($('#registerEmail').value, $('#registerPassword').value); });
+}
+
+function setupAppListeners() {
+  $$('[data-go]').forEach(el => el.addEventListener('click', () => setSection(el.dataset.go)));
+  $('#themeBtn').addEventListener('click', () => { document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; toast('Tema cambiado'); });
+  $('#logoutBtn').addEventListener('click', logout);
+  $('#searchInput')?.addEventListener('input', render);
+  $('#phaseFilter')?.addEventListener('change', render);
+  
+  $('#projectForm').addEventListener('submit', async e => { e.preventDefault(); await createProject($('#newProjName').value.trim(), $('#newProjClient').value.trim()); e.target.reset(); $('#searchInput').value = ''; });
+  $('#taskForm').addEventListener('submit', async e => { e.preventDefault(); await createTask(parseInt($('#taskProject').value), $('#taskTitle').value.trim(), $('#taskDate').value, $('#taskPriority').value); e.target.reset(); });
+  $('#moneyForm').addEventListener('submit', async e => { e.preventDefault(); await createMoney(parseInt($('#moneyProject').value), $('#moneyType').value, $('#moneyConcept').value.trim(), parseFloat($('#moneyAmount').value)); e.target.reset(); });
+  $('#docForm').addEventListener('submit', async e => { e.preventDefault(); await createDoc(parseInt($('#docProject').value), $('#docName').value.trim(), $('#docType').value); e.target.reset(); });
+  
+  $('#addNoteBtn').addEventListener('click', openAddNoteModal);
+  $('#addAlertBtn').addEventListener('click', openAddAlertModal);
+  
+  $('#exportBtn').addEventListener('click', exportData);
+  $('#importInput').addEventListener('change', async e => { if (e.target.files.length) { await importData(e.target.files[0]); e.target.value = ''; } });
+  $('#resetBtn').addEventListener('click', async () => {
+    if (confirm('¿Eliminar todos tus datos permanentemente?')) {
+      await supabase.from('projects').delete().eq('user_id', currentUser.id);
+      await supabase.from('tasks').delete().eq('user_id', currentUser.id);
+      await supabase.from('money').delete().eq('user_id', currentUser.id);
+      await supabase.from('docs').delete().eq('user_id', currentUser.id);
+      await supabase.from('notes').delete().eq('user_id', currentUser.id);
+      await supabase.from('alerts').delete().eq('user_id', currentUser.id);
+      state = { projects: [], tasks: [], money: [], docs: [], notes: [], alerts: [] };
+      render(); toast('Datos eliminados');
+    }
+  });
+  
+  $('#projectModal').addEventListener('click', e => { if (e.target.id === 'projectModal') $('#projectModal').style.display = 'none'; });
+  
+  document.addEventListener('click', (e) => {
+    const d = e.target.dataset;
+    if (d.taskDone !== undefined) { toggleTaskDone(parseInt(d.taskDone), e.target.checked); }
+    if (d.triggerDel) { openConfirmDeleteModal(d.triggerDel, parseInt(d.id)); }
+    if (d.viewProject) { openProjectModal(parseInt(d.viewProject)); }
+    if (d.viewNote) { openNoteViewModal(parseInt(d.viewNote)); }
+    if (d.editProject) { openEditProjectModal(parseInt(d.editProject)); }
+    if (d.editTask) { openEditTaskModal(parseInt(d.editTask)); }
+    if (d.editMoney) { openEditMoneyModal(parseInt(d.editMoney)); }
+    if (d.editDoc) { openEditDocModal(parseInt(d.editDoc)); }
+  });
+}
+
+// ============================================================
+// INICIO
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  await initSupabase();
+  setupLoginListeners();
+  if (currentUser) {
+    showApp();
+    await loadUserData();
+    setupAppListeners();
+    render();
+  } else {
+    showLoginScreen();
+  }
+});
+</script>
 </body>
 </html>
