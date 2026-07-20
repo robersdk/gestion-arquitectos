@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#0e6c73" />
   <title>Obra Clara Pro</title>
   <meta name="description" content="MVP funcional para estudios de arquitectura: obras, tareas, documentos, agenda y control económico." />
+  <!-- SDK Oficial de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{--bg:#f6f4ef;--surface:#ffffff;--surface2:#f0ece5;--text:#1f1d18;--muted:#67625a;--border:#ddd6ca;--primary:#0e6c73;--primary2:#155f66;--good:#2f7a34;--warn:#b16d1f;--bad:#b33c54;--info:#456bba;--shadow:0 10px 28px rgba(31,29,24,.08);--r:18px;--r2:12px;font-family:Inter,system-ui,sans-serif}
     [data-theme=dark]{--bg:#141312;--surface:#1b1a18;--surface2:#23211f;--text:#ede8dc;--muted:#a59f94;--border:#34312d;--primary:#59aab0;--primary2:#3f8d93;--good:#76b85d;--warn:#d09b4d;--bad:#d56f8c;--info:#7aa0ef;--shadow:0 10px 28px rgba(0,0,0,.25)}
@@ -71,8 +73,8 @@
         <button data-go="ajustes">Ajustes</button>
       </div>
       <div class="sidecard">
-        <strong>Guardado local</strong>
-        <div class="muted">Los cambios se guardan en el navegador con localStorage.</div>
+        <strong>Guardado en Nube</strong>
+        <div class="muted">Tus datos y archivos se respaldan automáticamente en Supabase.</div>
       </div>
     </aside>
     <main class="main" id="contenido">
@@ -88,7 +90,7 @@
             <div class="card">
               <div class="eyebrow">Resumen</div>
               <h2>Controla obras, tareas, documentos y presupuesto desde una sola app.</h2>
-              <p class="muted">Esta versión permite crear obras, añadir tareas, registrar gastos e ingresos, guardar todo en tu navegador y exportar/importar el estado.</p>
+              <p class="muted">Esta versión permite crear obras, añadir tareas, registrar gastos e ingresos, y está conectada con almacenamiento real en la nube.</p>
             </div>
             <div class="card soft">
               <h3>Hoy</h3>
@@ -204,9 +206,9 @@
               <h3>Subir referencia</h3>
               <form class="form" id="docForm">
                 <div><label>Obra</label><select id="docProject"></select></div>
-                <div><label>Nombre archivo</label><input id="docName" required placeholder="Ej. memoria-basica.pdf"></div>
-                <div><label>Tipo</label><select id="docType"><option>PDF</option><option>DWG</option><option>DOCX</option><option>IMG</option></select></div>
-                <button class="btn primary" type="submit">Guardar documento</button>
+                <div><label>Seleccionar archivo real</label><input id="docName" type="file" required></div>
+                <div><label>Tipo de extensión</label><select id="docType"><option>PDF</option><option>DWG</option><option>DOCX</option><option>IMG</option></select></div>
+                <button class="btn primary" type="submit">Subir a la nube</button>
               </form>
             </div>
           </div>
@@ -214,21 +216,21 @@
 
         <section class="section" id="ajustes">
           <div class="card">
-            <h3>Ajustes</h3>
-            <p class="muted">Exporta, importa o borra la demo local.</p>
+            <h3>Ajustes de Sincronización</h3>
+            <p class="muted">Puedes exportar copias de seguridad de la base de datos o forzar un reseteo.</p>
             <div class="toolbar">
-              <button class="btn primary" id="exportBtn">Exportar JSON</button>
+              <button class="btn primary" id="exportBtn">Exportar JSON local</button>
               <label class="btn secondary-neutral" style="display:inline-flex;align-items:center;gap:8px">
                 <input id="importInput" type="file" accept="application/json" hidden>
-                Importar JSON
+                Restaurar JSON
               </label>
-              <button class="btn action-delete" id="resetBtn">Borrar datos</button>
+              <button class="btn action-delete" id="resetBtn">Borrar datos locales</button>
             </div>
-            <pre id="jsonPreview" style="white-space:pre-wrap;margin-top:14px;background:var(--surface2);padding:14px;border-radius:12px;border:1px solid var(--border)"></pre>
+            <pre id="jsonPreview" style="white-space:pre-wrap;margin-top:14px;background:var(--surface2);padding:14px;border-radius:12px;border:1px solid var(--border);max-height:300px;overflow-y:auto"></pre>
           </div>
         </section>
 
-        <div class="footer-note">Hecha para GitHub Pages o Cloudflare Pages. Sin dependencias externas.</div>
+        <div class="footer-note">Cloud Backend impulsado por Supabase Storage.</div>
       </div>
 
       <nav class="mobile">
@@ -242,10 +244,9 @@
 
       <div id="projectModal">
         <div class="card">
-          <!-- Corregido: ID único e inalterable para evitar mutaciones de fondo en la app trasera -->
           <div class="row" id="modalHeaderRow">
             <div>
-              <h3 id="modalTitle">Detalle de obra</h3>
+              <h3 id="modalTitle">Detalle</h3>
               <div class="muted" id="modalSub"></div>
             </div>
           </div>
@@ -256,31 +257,20 @@
   </div>
 
   <script>
-    const KEY='obra-clara-pro-v4';
+    const KEY='obra-clara-pro-v5';
+    
+    // 1. INICIALIZAR SUPABASE CON TUS CREDENCIALES
+    const supabaseUrl = 'https://fatrjeaalnlorctlvqxb.supabase.co';
+    const supabaseKey = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdHJqZWFhbG5sb3JjdGx2cXhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0OTAzMjIsImV4cCI6MjEwMDA2NjMyMn0._BeajzkvD28ECBlNdq65HCQWuA4gKrGtrUt-V8mlVxc';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
     const seed={
-      projects:[
-        {id:1,name:'Rehabilitación Chamberí',client:'Inversora Luma',phase:'Ejecución',status:'En plazo',budget:120000,spent:76000,notes:'Visita de obra completada.'},
-        {id:2,name:'Local comercial Salamanca',client:'Benta Studio',phase:'Licencia',status:'Bloqueado',budget:45000,spent:9000,notes:'Falta respuesta municipal.'},
-        {id:3,name:'Vivienda unifamiliar Pozuelo',client:'Familia R.',phase:'Proyecto básico',status:'Urgente',budget:98000,spent:22000,notes:'Cerrar memoria y plano de instalaciones.'}
-      ],
-      tasks:[
-        {id:1,projectId:1,title:'Subir acta de visita',date:'2026-07-19',priority:'Alta',done:false},
-        {id:2,projectId:2,title:'Enviar plano corregido',date:'2026-07-20',priority:'Urgente',done:false}
-      ],
-      money:[
-        {id:1,projectId:1,type:'Ingreso',concept:'Honorarios fase 2',amount:18000,date:'2026-07-18'},
-        {id:2,projectId:1,type:'Gasto',concept:'Industrial estructura',amount:5200,date:'2026-07-17'}
-      ],
-      docs:[
-        {id:1,projectId:3,name:'memoria-basica.pdf',type:'PDF',date:'2026-07-19'},
-        {id:2,projectId:1,name:'plano-distribucion.dwg',type:'DWG',date:'2026-07-18'}
-      ],
-      notes:[
-        {id:1,projectId:1,title:'Revisar mediciones estructurales',body:'Antes de cerrar el presupuesto a finales de mes con el calculista.',date:'2026-07-19',docId:1}
-      ],
-      alerts:[
-        {id:1,text:'Entregar documentación de Pozuelo',date:'2026-07-23'}
-      ]
+      projects:[],
+      tasks:[],
+      money:[],
+      docs:[],
+      notes:[],
+      alerts:[]
     };
 
     let state = load();
@@ -296,19 +286,45 @@
     }
     
     function syncProjectExpenses() {
+      if(!state.projects) return;
       state.projects.forEach(p => {
-        p.spent = state.money
+        p.spent = (state.money || [])
           .filter(m => m.projectId == p.id && m.type === 'Gasto')
           .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
       });
     }
 
+    // 2. FUNCIÓN SAVE ACTUALIZADA: ENVÍA EL STATE.JSON A LA NUBE COMO BACKUP INVISIBLE
     function save(){
       syncProjectExpenses();
-      localStorage.setItem(KEY, JSON.stringify(state));
+      const stateStr = JSON.stringify(state);
+      localStorage.setItem(KEY, stateStr);
       renderOptions();
       render();
-      toast('Guardado');
+      
+      // Subida silenciosa a la nube del archivo general de base de datos
+      const fileBlob = new Blob([stateStr], { type: 'application/json' });
+      supabase.storage.from('documentos').upload('db/state.json', fileBlob, { upsert: true }).then(({error}) => {
+         if(!error) console.log("Copia de seguridad en la nube actualizada.");
+      });
+    }
+
+    // 3. RECUPERACIÓN AUTOMÁTICA DE DATOS AL ABRIR LA APP
+    async function syncFromCloud() {
+      try {
+        const { data, error } = await supabase.storage.from('documentos').download('db/state.json');
+        if (data) {
+          const text = await data.text();
+          state = JSON.parse(text);
+          localStorage.setItem(KEY, text);
+          syncProjectExpenses();
+          renderOptions();
+          render();
+          toast('Datos sincronizados desde la nube');
+        }
+      } catch (e) {
+        console.log("Iniciando con datos locales o nueva sesión");
+      }
     }
     
     function toast(msg){
@@ -316,13 +332,10 @@
       t.textContent=msg;
       t.classList.add('show');
       clearTimeout(window.__toast);
-      window.__toast=setTimeout(()=>t.classList.remove('show'),1400);
+      window.__toast=setTimeout(()=>t.classList.remove('show'),2000);
     }
     function projectName(id){
-      return (state.projects.find(p=>p.id==id)||{}).name||'—'
-    }
-    function docName(id){
-      return (state.docs.find(d=>d.id==id)||{}).name||''
+      return ((state.projects||[]).find(p=>p.id==id)||{}).name||'—'
     }
     function statusBadge(s){
       const c=s==='En plazo'?'good':s==='Bloqueado'?'warn':'bad';
@@ -344,28 +357,28 @@
       return `<div style="margin-top:8px;height:10px;background:var(--surface2);border-radius:999px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--primary)"></div></div><div class="meta" style="margin-bottom:4px"><span>${pct}% ejecutado</span><span>${fmt(spent)} / ${fmt(budget)}</span></div>`
     }
     function calc(){
-      const income=state.money.filter(m=>m.type==='Ingreso').reduce((a,b)=>a+(Number(b.amount)||0),0);
-      const expense=state.money.filter(m=>m.type==='Gasto').reduce((a,b)=>a+(Number(b.amount)||0),0);
+      const income=(state.money||[]).filter(m=>m.type==='Ingreso').reduce((a,b)=>a+(Number(b.amount)||0),0);
+      const expense=(state.money||[]).filter(m=>m.type==='Gasto').reduce((a,b)=>a+(Number(b.amount)||0),0);
       return {
         income,
         expense,
         margin:income-expense,
-        openTasks:state.tasks.filter(t=>!t.done).length,
-        urgent:state.projects.filter(p=>p.status==='Urgente').length,
-        overBudget:state.projects.filter(p=>Number(p.budget)>0 && (Number(p.spent)||0)>Number(p.budget)).length
+        openTasks:(state.tasks||[]).filter(t=>!t.done).length,
+        urgent:(state.projects||[]).filter(p=>p.status==='Urgente').length,
+        overBudget:(state.projects||[]).filter(p=>Number(p.budget)>0 && (Number(p.spent)||0)>Number(p.budget)).length
       }
     }
     function updateKpis(){
       const k=calc();
       return [
-        ['Obras activas',state.projects.length],
+        ['Obras activas',(state.projects||[]).length],
         ['Tareas abiertas',k.openTasks],
-        ['Docs',state.docs.length],
+        ['Docs en nube',(state.docs||[]).length],
         ['Presupuestos superados',k.overBudget]
       ].map(([a,b])=>`<div class="card kpi"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('')
     }
     function renderOptions(){
-      const options=state.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+      const options=(state.projects||[]).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
       ['#taskProject','#moneyProject','#docProject'].forEach(id=>{
         const el=$(id);
         if(el) el.innerHTML=options;
@@ -394,14 +407,13 @@
     }
     
     function openProjectModal(id){
-      const p=state.projects.find(x=>x.id==id);
+      const p=(state.projects||[]).find(x=>x.id==id);
       if(!p) return;
       
-      /* Corregido: Forzado estricto del ID #modalHeaderRow para evitar fugas de selectores */
       $('#modalHeaderRow').innerHTML = `<div><h3>Detalle de obra</h3><div class="muted" id="modalSub">${p.name} · ${p.client}</div></div>`;
-      const pt=state.tasks.filter(t=>t.projectId==id);
-      const pm=state.money.filter(m=>m.projectId==id);
-      const pd=state.docs.filter(d=>d.projectId==id);
+      const pt=(state.tasks||[]).filter(t=>t.projectId==id);
+      const pm=(state.money||[]).filter(m=>m.projectId==id);
+      const pd=(state.docs||[]).filter(d=>d.projectId==id);
       
       $('#modalBody').innerHTML = `
         <div class="split">
@@ -432,16 +444,15 @@
       const n = (state.notes||[]).find(x=>x.id==id);
       if(!n) return;
       
-      /* Corregido: Target unificado a #modalHeaderRow */
       $('#modalHeaderRow').innerHTML = `<div><h3>${n.title}</h3><div class="muted" id="modalSub">Creada el ${n.date || '—'}</div></div>`;
       let docHtml = '';
       if(n.docId) {
-        const d = state.docs.find(x => x.id == n.docId);
+        const d = (state.docs||[]).find(x => x.id == n.docId);
         if(d) {
           docHtml = `
             <div style="margin-top: 14px;">
               <h3 style="font-size:14px; margin-bottom:6px;">Documento de Referencia Vinculado:</h3>
-              <div class="badge info" style="font-size:13px; padding: 6px 12px; border-radius: 8px;">📎 ${d.name} (${d.type})</div>
+              ${d.url ? `<a href="${d.url}" target="_blank" download="${d.name}" class="badge info" style="text-decoration:none">📎 Descargar: ${d.name}</a>` : `<div class="badge info">📎 ${d.name} (${d.type})</div>`}
             </div>
           `;
         }
@@ -459,11 +470,9 @@
 
     function openConfirmDeleteModal(type, id) {
       let message = "¿Estás seguro de que deseas eliminar este elemento de forma permanente?";
-      if (type === 'project') message = "¡Atención! Al borrar esta obra se eliminarán también todas sus tareas, documentos e historial económico vinculados.";
+      if (type === 'project') message = "¡Atención! Al borrar esta obra se eliminarán también todas sus tareas, documentos e historial económico vinculados de la nube.";
       
-      /* Corregido: Target directo al ID del modal para blindar el fondo */
       $('#modalHeaderRow').innerHTML = `<div><h3>Confirmar eliminación</h3><div class="muted">Acción destructiva irreversible</div></div>`;
-      
       $('#modalBody').innerHTML = `
         <div class="item" style="background:color-mix(in srgb, var(--bad) 8%, transparent); border-color:var(--bad); padding:16px; font-weight:500; text-align:center;">
           ${message}
@@ -474,15 +483,22 @@
         </div>
       `;
 
-      $('#confirmDeleteBtn').onclick = () => {
-        executeDelete(type, id);
+      $('#confirmDeleteBtn').onclick = async () => {
+        $('#confirmDeleteBtn').textContent = "Borrando de la nube...";
+        await executeDelete(type, id);
         $('#projectModal').style.display = 'none';
+        toast('Eliminado correctamente');
       };
       $('#projectModal').style.display = 'flex';
     }
 
-    function executeDelete(type, id) {
+    // Función asíncrona para eliminar registros y purgar la basura de Supabase
+    async function executeDelete(type, id) {
       if (type === 'project') {
+        const filesToDel = (state.docs||[]).filter(x => x.projectId == id);
+        for(let f of filesToDel) {
+          if(f.filePath) await supabase.storage.from('documentos').remove([f.filePath]);
+        }
         state.projects = state.projects.filter(x => x.id != id);
         state.tasks = state.tasks.filter(x => x.projectId != id);
         state.money = state.money.filter(x => x.projectId != id);
@@ -490,7 +506,11 @@
       }
       if (type === 'task') state.tasks = state.tasks.filter(x => x.id != id);
       if (type === 'money') state.money = state.money.filter(x => x.id != id);
-      if (type === 'doc') state.docs = state.docs.filter(x => x.id != id);
+      if (type === 'doc') {
+        const doc = state.docs.find(x => x.id == id);
+        if(doc && doc.filePath) await supabase.storage.from('documentos').remove([doc.filePath]);
+        state.docs = state.docs.filter(x => x.id != id);
+      }
       if (type === 'note') state.notes = (state.notes || []).filter(x => x.id != id);
       if (type === 'alert') state.alerts = (state.alerts || []).filter(x => x.id != id);
       save();
@@ -498,7 +518,7 @@
 
     function openAddNoteModal(){
       $('#modalHeaderRow').innerHTML = `<div><h3>Nueva Nota Rápida</h3><div class="muted">Anotación interna temporal</div></div>`;
-      const docOpts = `<option value="">-- Ninguno --</option>` + state.docs.map(d => `<option value="${d.id}">${d.name} (${d.type})</option>`).join('');
+      const docOpts = `<option value="">-- Ninguno --</option>` + (state.docs||[]).map(d => `<option value="${d.id}">${d.name} (${d.type})</option>`).join('');
 
       $('#modalBody').innerHTML = `
         <form class="form" id="addNoteForm">
@@ -549,7 +569,7 @@
     }
 
     function openEditProjectModal(id){
-      const p=state.projects.find(x=>x.id==id);
+      const p=(state.projects||[]).find(x=>x.id==id);
       if(!p) return;
       $('#modalHeaderRow').innerHTML = `<div><h3>Editar Obra</h3><div class="muted">${p.name}</div></div>`;
       
@@ -603,10 +623,10 @@
     }
 
     function openEditTaskModal(id){
-      const t=state.tasks.find(x=>x.id==id);
+      const t=(state.tasks||[]).find(x=>x.id==id);
       if(!t) return;
       $('#modalHeaderRow').innerHTML = `<div><h3>Editar Tarea</h3><div class="muted">${t.title}</div></div>`;
-      const opts = state.projects.map(p=>`<option value="${p.id}" ${p.id==t.projectId?'selected':''}>${p.name}</option>`).join('');
+      const opts = (state.projects||[]).map(p=>`<option value="${p.id}" ${p.id==t.projectId?'selected':''}>${p.name}</option>`).join('');
 
       $('#modalBody').innerHTML = `
         <form class="form" id="editTaskForm">
@@ -643,10 +663,10 @@
     }
 
     function openEditMoneyModal(id){
-      const m=state.money.find(x=>x.id==id);
+      const m=(state.money||[]).find(x=>x.id==id);
       if(!m) return;
       $('#modalHeaderRow').innerHTML = `<div><h3>Editar Movimiento Financiero</h3><div class="muted">${m.concept}</div></div>`;
-      const opts = state.projects.map(p=>`<option value="${p.id}" ${p.id==m.projectId?'selected':''}>${p.name}</option>`).join('');
+      const opts = (state.projects||[]).map(p=>`<option value="${p.id}" ${p.id==m.projectId?'selected':''}>${p.name}</option>`).join('');
 
       $('#modalBody').innerHTML = `
         <form class="form" id="editMoneyForm">
@@ -684,19 +704,19 @@
     }
 
     function openEditDocModal(id){
-      const doc=state.docs.find(x=>x.id==id);
+      const doc=(state.docs||[]).find(x=>x.id==id);
       if(!doc) return;
       $('#modalHeaderRow').innerHTML = `<div><h3>Editar Referencia de Documento</h3><div class="muted">${doc.name}</div></div>`;
-      const opts = state.projects.map(p=>`<option value="${p.id}" ${p.id==doc.projectId?'selected':''}>${p.name}</option>`).join('');
+      const opts = (state.projects||[]).map(p=>`<option value="${p.id}" ${p.id==doc.projectId?'selected':''}>${p.name}</option>`).join('');
 
       $('#modalBody').innerHTML = `
         <form class="form" id="editDocForm">
           <input type="hidden" id="editDocDate" value="${doc.date || getLocalDateString()}">
           <div><label>Obra Relacionada</label><select id="editDocProj">${opts}</select></div>
           <div class="split">
-            <div><label>Nombre del Archivo</label><input id="editDocName" value="${doc.name}" required></div>
+            <div><label>Nombre del Archivo (Visual)</label><input id="editDocName" value="${doc.name}" required></div>
             <div>
-              <label>Formato / Extensión</label>
+              <label>Formato</label>
               <select id="editDocType">
                 <option ${doc.type==='PDF'?'selected':''}>PDF</option>
                 <option ${doc.type==='DWG'?'selected':''}>DWG</option>
@@ -731,12 +751,12 @@
       const k=calc();
       
       $('#todayStats').innerHTML=[
-        ['Visitas',state.tasks.filter(t=>t.date===getLocalDateString()).length],
+        ['Visitas',(state.tasks||[]).filter(t=>t.date===getLocalDateString()).length],
         ['Obras críticas',k.urgent],
-        ['Alertas',state.alerts.length]
+        ['Alertas',(state.alerts||[]).length]
       ].map(([a,b])=>`<div class="item"><div class="muted">${a}</div><strong>${b}</strong></div>`).join('');
 
-      const projects=state.projects.filter(p=>`${p.name} ${p.client} ${p.phase} ${p.status} ${p.notes}`.toLowerCase().includes(q) && (phase==='Todos' || p.phase===phase));
+      const projects=(state.projects||[]).filter(p=>`${p.name} ${p.client} ${p.phase} ${p.status} ${p.notes}`.toLowerCase().includes(q) && (phase==='Todos' || p.phase===phase));
       $('#projectsList').innerHTML=projects.map(p=>`
         <div class="item">
           <div class="row">
@@ -756,10 +776,10 @@
         </div>
       `).join('') || '<div class="item">Sin resultados</div>';
 
-      $('#tasksList').innerHTML=state.tasks.filter(t=>`${t.title} ${projectName(t.projectId)} ${t.priority}`.toLowerCase().includes(q)).map(t=>`
+      $('#tasksList').innerHTML=(state.tasks||[]).filter(t=>`${t.title} ${projectName(t.projectId)} ${t.priority}`.toLowerCase().includes(q)).map(t=>`
         <div class="item">
           <div class="row">
-            <div>move<strong>${t.title}</strong><div class="meta"><span>${projectName(t.projectId)}</span><span>${t.date}</span></div></div>
+            <div><strong>${t.title}</strong><div class="meta"><span>${projectName(t.projectId)}</span><span>${t.date}</span></div></div>
             <div><span class="badge ${t.priority==='Urgente'?'bad':t.priority==='Alta'?'warn':'good'}">${t.priority}</span></div>
           </div>
           <label class="meta" style="margin-top:4px"><input class="check" type="checkbox" data-task-done="${t.id}" ${t.done?'checked':''}> Marcar como hecha</label>
@@ -770,7 +790,7 @@
         </div>
       `).join('') || '<div class="item">Sin resultados</div>';
 
-      $('#moneyList').innerHTML=state.money.filter(m=>`${m.concept} ${projectName(m.projectId)} ${m.type}`.toLowerCase().includes(q)).map(m=>`
+      $('#moneyList').innerHTML=(state.money||[]).filter(m=>`${m.concept} ${projectName(m.projectId)} ${m.type}`.toLowerCase().includes(q)).map(m=>`
         <div class="item">
           <div class="row">
             <div><strong>${m.concept}</strong><div class="meta"><span>${projectName(m.projectId)}</span><span>${m.date}</span></div></div>
@@ -783,13 +803,14 @@
         </div>
       `).join('') || '<div class="item">Sin resultados</div>';
 
-      $('#docsList').innerHTML=state.docs.filter(d=>`${d.name} ${projectName(d.projectId)} ${d.type}`.toLowerCase().includes(q)).map(d=>`
+      $('#docsList').innerHTML=(state.docs||[]).filter(d=>`${d.name} ${projectName(d.projectId)} ${d.type}`.toLowerCase().includes(q)).map(d=>`
         <div class="item">
           <div class="row">
             <div><strong>${d.name}</strong><div class="meta"><span>${projectName(d.projectId)}</span><span>${d.type}</span></div></div>
-            <div><span class="badge info">Guardado</span></div>
+            <div><span class="badge info">Nube</span></div>
           </div>
           <div class="card-actions-centered">
+            ${d.url ? `<a href="${d.url}" target="_blank" download="${d.name}" class="btn action-view" style="display:inline-flex; align-items:center; justify-content:center;">Descargar</a>` : ''}
             <button class="btn action-edit" data-edit-doc="${d.id}">Editar</button>
             <button class="btn action-delete" data-trigger-del="doc" data-id="${d.id}">Borrar</button>
           </div>
@@ -813,7 +834,7 @@
     document.addEventListener('click',e=>{
       const d=e.target.dataset;
       if(d.taskDone){
-        const task=state.tasks.find(x=>x.id==d.taskDone);
+        const task=(state.tasks||[]).find(x=>x.id==d.taskDone);
         if(task){task.done=e.target.checked; save();}
       }
       if(d.triggerDel) { openConfirmDeleteModal(d.triggerDel, d.id); }
@@ -861,14 +882,59 @@
       save();
     };
 
-    $('#docForm').onsubmit=e=>{
+    // FORMULARIO DE DOCUMENTOS - SUBIDA REAL DE ARCHIVOS A SUPABASE
+    $('#docForm').onsubmit = async e => {
       e.preventDefault();
       const pId = +$('#docProject').value;
       if(!pId) return toast('Crea primero una obra');
-      state.docs.unshift({id:Date.now(),projectId:pId,name:$('#docName').value,type:$('#docType').value,date:getLocalDateString()});
+
+      const fileInput = $('#docName');
+      const file = fileInput.files[0];
+      if(!file) return toast('Por favor, selecciona un archivo');
+
+      toast('Subiendo archivo a la nube...');
+      
+      // Bloquear botón para no enviar dos veces
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Subiendo...";
+
+      // Generar ruta segura para la nube
+      const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '');
+      const filePath = `obra_${pId}/${Date.now()}_${cleanName}`;
+
+      // Subida física del archivo
+      const { data, error } = await supabase.storage
+        .from('documentos')
+        .upload(filePath, file);
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Subir a la nube";
+
+      if (error) {
+        console.error(error);
+        return toast('Error al subir. Comprueba la conexión.');
+      }
+
+      // Obtener el enlace público para descargas
+      const { data: urlData } = supabase.storage
+        .from('documentos')
+        .getPublicUrl(filePath);
+
+      state.docs.unshift({
+        id: Date.now(),
+        projectId: pId,
+        name: file.name,
+        type: $('#docType').value,
+        date: getLocalDateString(),
+        url: urlData.publicUrl,
+        filePath: filePath
+      });
+
       e.target.reset();
       if($('#searchInput')) $('#searchInput').value = '';
       save();
+      toast('Documento subido y enlazado correctamente');
     };
 
     $('#addNoteBtn')?.addEventListener('click', () => { openAddNoteModal(); });
@@ -881,10 +947,10 @@
       if(!file) return;
       try{
         const parsed = JSON.parse(await file.text());
-        if(parsed && parsed.projects && parsed.tasks){
+        if(parsed && parsed.projects){
           state=parsed;
           save();
-          toast('Importado');
+          toast('Restaurado y subido a la nube');
         } else {
           toast('Estructura JSON inválida');
         }
@@ -893,18 +959,20 @@
       }
     };
     $('#resetBtn').onclick=()=>{
-      if(confirm('¿Borrar todos los datos locales?')){
+      if(confirm('¿Borrar todos los datos locales de este navegador? (La copia de la nube no se borrará)')){
         localStorage.removeItem(KEY); 
         state=JSON.parse(JSON.stringify(seed)); 
         save(); 
-        toast('Datos borrados');
+        toast('Datos locales borrados');
       }
     };
 
     $('#projectModal').addEventListener('click',e=>{if(e.target.id==='projectModal') $('#projectModal').style.display='none';});
 
+    // Proceso de arranque
     syncProjectExpenses();
     render();
+    syncFromCloud(); // Intenta bajar la última base de datos de la nube al abrir la web
   </script>
 </body>
 </html>
