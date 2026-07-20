@@ -1,34 +1,26 @@
-# 🚀 Obra Clara Pro
+# Obra Clara Pro
 
-## Aquí tienes el código completo de la versión funcional, ya con el ajuste para que al cambiar de pestaña vuelva arriba automáticamente. Lo he generado en un solo archivo HTML listo para abrir o publicar.
+Gestión para estudios de arquitectura: obras, tareas, documentos, agenda y control económico.
 
-### 📄 Archivo
-Guárdalo como **index.html** y súbelo tal cual a Cloudflare Pages o ábrelo localmente en el navegador.
+## Características
 
-### ✨ Qué incluye
-- ✅ Dashboard inicial con KPIs
-- ✅ Obras con alta rápida
-- ✅ Tareas por obra
-- ✅ Control económico con ingresos y gastos
-- ✅ Documentos locales
-- ✅ Exportar e importar JSON
-- ✅ Botón "↑ Arriba" para volver al inicio
+- 📋 **Gestión de Obras**: Seguimiento completo de proyectos por fase
+- ✅ **Tareas**: Organiza pendientes con prioridades y fechas
+- 💰 **Control Económico**: Ingresos, gastos y márgenes por obra
+- 📄 **Documentos**: Almacena referencias de planos y memorias
+- 📝 **Notas**: Anotaciones internas y alertas de vencimientos
+- ☁️ **Sincronización**: Datos en la nube con Supabase
 
----
+## Tecnología
 
-## 📦 Publicación
+- **Frontend**: HTML5 + CSS3 + JavaScript vanilla
+- **Backend**: Supabase (Auth + PostgreSQL)
+- **Deploy**: GitHub Pages
 
-1. **Renómbralo a index.html** ✅
-2. **Súbelo a un proyecto nuevo en Cloudflare Pages** ✅
-3. **Si luego quieres dominio propio, añade el dominio desde "Custom domains"** 🔗
+## Acceso
 
----
-
-## 💡 Notas
-He dejado la app pensada para que sea fácil de ampliar después con login y base de datos.
+La app está disponible en GitHub Pages. Inicia sesión con tu cuenta o crea una nueva.
 
 ---
 
-**Estado**: MVP funcional ✅  
-**Versión**: 2.0  
-**Almacenamiento**: localStorage (navegador)
+Hecha para arquitectos. Datos sincronizados con Supabase.
